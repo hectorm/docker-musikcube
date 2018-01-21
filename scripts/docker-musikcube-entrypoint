@@ -1,0 +1,17 @@
+#!/bin/sh
+
+set -eu
+
+if [ "$1" = 'musikcube' ]; then
+	STDOUT=/dev/null
+	STDERR=$STDOUT
+else
+	STDOUT=/dev/stdout
+	STDERR=/dev/stderr
+fi
+
+caddy \
+	--conf "${HOME}/Caddyfile" \
+	>"${STDOUT}" 2>"${STDERR}" &
+
+exec "$@"

@@ -1,0 +1,19 @@
+# web socket (metadata) server
+https://*:7905 {
+	gzip
+	tls self_signed
+	log / stdout "[{when_iso}] [{remote} - {host}] [{method} {proto} {status}] {uri}"
+	proxy / 127.0.0.1:7903 {
+		websocket
+	}
+}
+
+# audio (file) server
+https://*:7906 {
+	gzip
+	tls self_signed
+	log / stdout "[{when_iso}] [{remote} - {host}] [{method} {proto} {status}] {uri}"
+	proxy / 127.0.0.1:7904 {
+		transparent
+	}
+}

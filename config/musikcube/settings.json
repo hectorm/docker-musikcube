@@ -1,0 +1,15 @@
+{
+  "AutoUpdateCheck": false,
+  "ColorTheme": "",
+  "DisableCustomColors": false,
+  "FirstRunSettingsDisplayed": true,
+  "IndexerLogEnabled": false,
+  "Locale": "en_US",
+  "MaxTagReadThreads": 4,
+  "MinimizeToTray": true,
+  "RemoveMissingFiles": true,
+  "StartMinimized": true,
+  "SyncOnStartup": true,
+  "TimeChangeMode": 1,
+  "UsePaletteColors": true
+}
