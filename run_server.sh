@@ -2,13 +2,20 @@
 
 set -eu
 
+if [ -d "${HOME}/Music" ]; then
+	HOST_MUSIC_FOLDER="${HOME}/Music"
+	CONTAINER_MUSIC_FOLDER='/music'
+fi
+
 docker rm --force musikcube 2>/dev/null || true
 docker run --tty --detach \
 	--name musikcube \
-	--publish 7905:7905 \
-	--publish 7906:7906 \
 	--cpus 1 \
 	--memory 128mb \
+	--publish 7905:7905 \
+	--publish 7906:7906 \
 	--restart unless-stopped \
-	--mount type=bind,src="${HOME}/Music",dst='/music',ro \
+	${HOST_MUSIC_FOLDER:+ \
+		--mount type=bind,src="${HOST_MUSIC_FOLDER}",dst="${CONTAINER_MUSIC_FOLDER}",ro \
+	} \
 	musikcube

@@ -2,9 +2,10 @@
 
 set -eu
 
-if [ "$1" = 'musikcube' ]; then
+# Print Caddy output if first arg is not "musikcube"
+if [ "${1:-}" = 'musikcube' ]; then
 	STDOUT=/dev/null
-	STDERR=$STDOUT
+	STDERR=${STDOUT}
 else
 	STDOUT=/dev/stdout
 	STDERR=/dev/stderr
