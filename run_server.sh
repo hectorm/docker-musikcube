@@ -9,6 +9,6 @@ docker run --tty --detach \
 	--publish 7906:7906 \
 	--cpus 1 \
 	--memory 128mb \
-	--restart on-failure:10 \
+	--restart unless-stopped \
 	--mount type=bind,src="${HOME}/Music",dst='/music',ro \
 	musikcube
