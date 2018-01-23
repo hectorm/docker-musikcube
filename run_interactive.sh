@@ -19,6 +19,7 @@ docker run --tty --interactive --rm \
 	--memory 128mb \
 	--publish 7905:7905 \
 	--publish 7906:7906 \
+	--env MUSIKCUBE_INTERACTIVE=1 \
 	${HOST_MUSIC_FOLDER:+ \
 		--mount type=bind,src="${HOST_MUSIC_FOLDER}",dst="${CONTAINER_MUSIC_FOLDER}",ro \
 	} \
@@ -26,4 +27,4 @@ docker run --tty --interactive --rm \
 		--mount type=bind,src="${HOST_PULSEAUDIO_SOCKET}",dst="${CONTAINER_PULSEAUDIO_SOCKET}",ro \
 		--env PULSE_SERVER="${CONTAINER_PULSEAUDIO_SOCKET}" \
 	} \
-	musikcube "${@:-musikcube}"
+	musikcube

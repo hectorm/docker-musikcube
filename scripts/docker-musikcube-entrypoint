@@ -2,17 +2,19 @@
 
 set -eu
 
-# Print Caddy output if first arg is not "musikcube"
-if [ "${1:-}" = 'musikcube' ]; then
-	STDOUT=/dev/null
-	STDERR=${STDOUT}
+if [ "${MUSIKCUBE_INTERACTIVE:-0}" -eq 1 ]; then
+	caddy --conf "${HOME}/Caddyfile" &
+	musikcube
 else
-	STDOUT=/dev/stdout
-	STDERR=/dev/stderr
+	caddy --conf "${HOME}/Caddyfile" & CADDY_PID=$!
+	musikcube >/dev/null & MUSIKCUBE_PID=$!
+	while sleep 30; do
+		if [ ! -e "/proc/${CADDY_PID}" ]; then
+			printf -- '%s\n' 'Caddy is not running, exiting...'
+			exit 1
+		elif [ ! -e "/proc/${MUSIKCUBE_PID}" ]; then
+			printf -- '%s\n' 'Musikcube is not running, exiting...'
+			exit 1
+		fi
+	done
 fi
-
-caddy \
-	--conf "${HOME}/Caddyfile" \
-	>"${STDOUT}" 2>"${STDERR}" &
-
-exec "$@"

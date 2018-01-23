@@ -14,7 +14,7 @@ docker run --tty --detach \
 	--memory 128mb \
 	--publish 7905:7905 \
 	--publish 7906:7906 \
-	--restart unless-stopped \
+	--restart on-failure:10 \
 	${HOST_MUSIC_FOLDER:+ \
 		--mount type=bind,src="${HOST_MUSIC_FOLDER}",dst="${CONTAINER_MUSIC_FOLDER}",ro \
 	} \

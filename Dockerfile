@@ -124,4 +124,3 @@ EXPOSE 7905 7906
 USER musikcube:musikcube
 
 ENTRYPOINT ["docker-musikcube-entrypoint"]
-CMD ["sh", "-c", "musikcube >/dev/null"]
