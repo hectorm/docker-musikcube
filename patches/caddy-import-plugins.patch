@@ -1,0 +1,8 @@
+diff --git a/caddy/caddymain/run.go b/caddy/caddymain/run.go
+index e6faa05..07029cf 100644
+--- a/caddy/caddymain/run.go
++++ b/caddy/caddymain/run.go
+@@ -37,2 +37,3 @@ import (
+ 	// This is where other plugins get plugged in (imported)
++	_ "github.com/caddyserver/dnsproviders/cloudflare"
+ )

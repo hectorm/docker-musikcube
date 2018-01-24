@@ -61,10 +61,11 @@ RUN useradd \
 	musikcube
 
 # Copy scripts and configurations
+COPY --chown=root:root patches/ /tmp/patches/
 COPY --chown=root:root config/pulse-client.conf /etc/pulse/client.conf
 COPY --chown=root:root scripts/docker-musikcube-entrypoint /usr/local/bin/
 COPY --chown=musikcube:musikcube config/Caddyfile /home/musikcube/
-COPY --chown=musikcube:musikcube config/musikcube /home/musikcube/.musikcube
+COPY --chown=musikcube:musikcube config/musikcube/ /home/musikcube/.musikcube/
 
 RUN uname --all \
 	# Install dependencies
@@ -86,10 +87,13 @@ RUN uname --all \
 	# Build Caddy
 	&& go get -u github.com/mholt/caddy \
 	&& go get -u github.com/caddyserver/builds \
+	&& go get -u github.com/caddyserver/dnsproviders/cloudflare \
 	&& cd "${GOPATH}/src/github.com/mholt/caddy/caddy" \
+	&& git apply /tmp/patches/caddy-import-plugins.patch \
 	&& go run build.go \
 	&& ./caddy --version \
 	&& ./caddy --plugins \
+	&& setcap cap_net_bind_service=+ep ./caddy \
 	&& mv ./caddy /usr/local/bin/caddy \
 	# Build musikcube
 	&& mkdir /tmp/musikcube \

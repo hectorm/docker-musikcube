@@ -3,10 +3,10 @@
 set -eu
 
 if [ "${MUSIKCUBE_INTERACTIVE:-0}" -eq 1 ]; then
-	caddy --conf "${HOME}/Caddyfile" &
+	caddy --agree --conf "${HOME}/Caddyfile" &
 	musikcube
 else
-	caddy --conf "${HOME}/Caddyfile" & CADDY_PID=$!
+	caddy --agree --conf "${HOME}/Caddyfile" & CADDY_PID=$!
 	musikcube >/dev/null & MUSIKCUBE_PID=$!
 	while sleep 30; do
 		if [ ! -e "/proc/${CADDY_PID}" ]; then
