@@ -111,7 +111,8 @@ RUN uname --all \
 	&& mkdir /music \
 	&& cd /home/musikcube/.musikcube/1 \
 	&& sqlite3 musik.db < musik.db.sql \
-	&& chown musikcube:musikcube musik.db \
+	# Make sure everything belongs to musikcube
+	&& chown -R musikcube:musikcube /home/musikcube \
 	# Cleanup
 	&& apt-get remove -y ${BUILD_DEPENDENCIES} \
 	&& apt-get autoremove -y \
