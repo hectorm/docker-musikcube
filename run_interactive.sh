@@ -19,7 +19,9 @@ docker run --tty --interactive --rm \
 	--memory 128mb \
 	--publish 7905:7905 \
 	--publish 7906:7906 \
-	--env MUSIKCUBE_INTERACTIVE=1 \
+	--env MUSIKCUBE_INTERACTIVE='1' \
+	--env MUSIKCUBE_OUTPUT_DRIVER='AlsaOut' \
+	--env MUSIKCUBE_SERVER_PASSWORD='musikcube' \
 	--env CLOUDFLARE_EMAIL='email@example.com' \
 	--env CLOUDFLARE_API_KEY='xxxxxxxxxxxxxxx' \
 	--mount type=volume,src='musikcube-caddy-data',dst='/home/musikcube/.caddy' \

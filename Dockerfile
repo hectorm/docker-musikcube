@@ -3,11 +3,15 @@ FROM ubuntu:16.04
 ARG GOLANG_RELEASE_URL=https://dl.google.com/go/go1.9.2.linux-amd64.tar.gz
 ARG MUSIKCUBE_GIT_REPOSITORY=https://github.com/clangen/musikcube.git
 ARG MUSIKCUBE_GIT_BRANCH=master
-ARG MUSIKCUBE_PASSWORD
+
+ENV MUSIKCUBE_INTERACTIVE=0
+ENV MUSIKCUBE_SERVER_PASSWORD=musikcube
+ENV MUSIKCUBE_OUTPUT_DRIVER=Null
 
 ENV DEBIAN_FRONTEND noninteractive
 
 ENV CORE_DEPENDENCIES \
+	jq \
 	libasound2 \
 	libboost-atomic1.58.0 \
 	libboost-chrono1.58.0 \
@@ -104,9 +108,6 @@ RUN uname --all \
 	&& make -j$(nproc) \
 	&& cmake . \
 	&& make install \
-	# Set musikcube server password
-	&& cd /home/musikcube/.musikcube \
-	&& perl -i -pe 's/%PASSWORD%/$ENV{MUSIKCUBE_PASSWORD}/g' 'plugin_musikcubeserver(wss,http).json' \
 	# Create music library
 	&& mkdir /music \
 	&& cd /home/musikcube/.musikcube/1 \

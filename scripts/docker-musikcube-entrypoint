@@ -2,7 +2,32 @@
 
 set -eu
 
-if [ "${MUSIKCUBE_INTERACTIVE:-0}" -eq 1 ]; then
+create_empty_json_file() {
+	if [ ! -f "$1" ]; then
+		printf '{}\n' > "$1"
+	fi
+}
+
+# Set playback options
+PLAYBACK_FILE="${HOME}/.musikcube/playback.json"
+create_empty_json_file "${PLAYBACK_FILE}"
+PLAYBACK_FILE_JSON=$(jq \
+	--arg OutputPlugin "${MUSIKCUBE_OUTPUT_DRIVER}" \
+	'.+{OutputPlugin: $OutputPlugin}' "${PLAYBACK_FILE}"
+)
+printf -- '%s\n' "${PLAYBACK_FILE_JSON}" > "${PLAYBACK_FILE}"
+
+# Set musikcubeserver options
+PLUGIN_MUSIKCUBESERVER_FILE="${HOME}/.musikcube/plugin_musikcubeserver(wss,http).json"
+create_empty_json_file "${PLUGIN_MUSIKCUBESERVER_FILE}"
+PLUGIN_MUSIKCUBESERVER_JSON=$(jq \
+	--arg password "${MUSIKCUBE_SERVER_PASSWORD}" \
+	'.+{password: $password}' "${PLUGIN_MUSIKCUBESERVER_FILE}"
+)
+printf -- '%s\n' "${PLUGIN_MUSIKCUBESERVER_JSON}" > "${PLUGIN_MUSIKCUBESERVER_FILE}"
+
+# Initialize
+if [ "${MUSIKCUBE_INTERACTIVE}" -eq 1 ]; then
 	caddy --agree --conf "${HOME}/.caddy/Caddyfile" &
 	musikcube
 else

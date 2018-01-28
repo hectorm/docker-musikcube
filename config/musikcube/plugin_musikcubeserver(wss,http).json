@@ -2,6 +2,5 @@
   "http_server_enabled": true,
   "http_server_port": 7904,
   "websocket_server_enabled": true,
-  "websocket_server_port": 7903,
-  "password": "%PASSWORD%"
+  "websocket_server_port": 7903
 }
