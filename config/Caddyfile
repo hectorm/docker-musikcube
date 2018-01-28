@@ -2,6 +2,9 @@
 https://*:7905 {
 	gzip
 	tls self_signed
+	# tls {
+	#	dns cloudflare
+	# }
 	log / stdout "[{when_iso}] [{remote} - {host}] [{method} {proto} {status}] {uri}"
 	proxy / 127.0.0.1:7903 {
 		websocket
@@ -12,6 +15,9 @@ https://*:7905 {
 https://*:7906 {
 	gzip
 	tls self_signed
+	# tls {
+	#	dns cloudflare
+	# }
 	log / stdout "[{when_iso}] [{remote} - {host}] [{method} {proto} {status}] {uri}"
 	proxy / 127.0.0.1:7904 {
 		transparent

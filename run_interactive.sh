@@ -20,6 +20,8 @@ docker run --tty --interactive --rm \
 	--publish 7905:7905 \
 	--publish 7906:7906 \
 	--env MUSIKCUBE_INTERACTIVE=1 \
+	--env CLOUDFLARE_EMAIL='email@example.com' \
+	--env CLOUDFLARE_API_KEY='xxxxxxxxxxxxxxx' \
 	${HOST_MUSIC_FOLDER:+ \
 		--mount type=bind,src="${HOST_MUSIC_FOLDER}",dst="${CONTAINER_MUSIC_FOLDER}",ro \
 	} \
