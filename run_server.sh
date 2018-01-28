@@ -17,6 +17,8 @@ docker run --tty --detach \
 	--restart on-failure:10 \
 	--env CLOUDFLARE_EMAIL='email@example.com' \
 	--env CLOUDFLARE_API_KEY='xxxxxxxxxxxxxxx' \
+	--mount type=volume,src='musikcube-caddy-data',dst='/home/musikcube/.caddy' \
+	--mount type=volume,src='musikcube-app-data',dst='/home/musikcube/.musikcube' \
 	${HOST_MUSIC_FOLDER:+ \
 		--mount type=bind,src="${HOST_MUSIC_FOLDER}",dst="${CONTAINER_MUSIC_FOLDER}",ro \
 	} \
