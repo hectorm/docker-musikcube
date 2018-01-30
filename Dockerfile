@@ -28,6 +28,7 @@ ENV CORE_DEPENDENCIES \
 	libogg0 \
 	libpulse0 \
 	libvorbis0a \
+	libvorbisfile3 \
 	locales \
 	pulseaudio
 
