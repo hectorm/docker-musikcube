@@ -27,12 +27,12 @@ PLUGIN_MUSIKCUBESERVER_JSON=$(jq \
 printf -- '%s\n' "${PLUGIN_MUSIKCUBESERVER_JSON}" > "${PLUGIN_MUSIKCUBESERVER_FILE}"
 
 # Initialize
-if [ "${MUSIKCUBE_INTERACTIVE}" -eq 1 ]; then
+if [ "${USE_MUSIKCUBE_CLIENT}" -eq 1 ]; then
 	caddy --agree --conf "${HOME}/.caddy/Caddyfile" &
 	musikcube
 else
 	caddy --agree --conf "${HOME}/.caddy/Caddyfile" & CADDY_PID=$!
-	musikcube >/dev/null & MUSIKCUBE_PID=$!
+	musikcubed && MUSIKCUBE_PID=$(cat /var/lock/musikcubed.lock)
 	while sleep 30; do
 		if [ ! -e "/proc/${CADDY_PID}" ]; then
 			printf -- '%s\n' 'Caddy is not running, exiting...'
