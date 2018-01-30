@@ -9,7 +9,7 @@ MUSIKCUBE_GIT_BRANCH=${1:-$(curl -fs 'https://api.github.com/repos/clangen/musik
 	grep -m1 '"tag_name"' | cut -d\" -f4
 )}
 
-printf -- 'Building "%s" from "%s"...\n' "${MUSIKCUBE_GIT_LATEST_RELEASE}" "${MUSIKCUBE_GIT_REPOSITORY}"
+printf -- 'Building "%s" from "%s"...\n' "${MUSIKCUBE_GIT_BRANCH}" "${MUSIKCUBE_GIT_REPOSITORY}"
 
 docker build --rm \
 	--tag musikcube \
