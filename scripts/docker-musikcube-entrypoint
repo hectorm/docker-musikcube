@@ -32,7 +32,7 @@ if [ "${USE_MUSIKCUBE_CLIENT}" -eq 1 ]; then
 	musikcube
 else
 	caddy --agree --conf "${HOME}/.caddy/Caddyfile" & CADDY_PID=$!
-	musikcubed && MUSIKCUBE_PID=$(cat /var/lock/musikcubed.lock)
+	musikcubed --start && MUSIKCUBE_PID=$(cat /tmp/musikcubed.lock)
 	while sleep 30; do
 		if [ ! -e "/proc/${CADDY_PID}" ]; then
 			printf -- '%s\n' 'Caddy is not running, exiting...'

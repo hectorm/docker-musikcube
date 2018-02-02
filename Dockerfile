@@ -20,6 +20,7 @@ ENV CORE_DEPENDENCIES \
 	libboost-system1.58.0 \
 	libboost-thread1.58.0 \
 	libcurl3 \
+	libev4 \
 	libfaad2 \
 	libflac8 \
 	libmicrohttpd10 \
@@ -47,6 +48,7 @@ ENV BUILD_DEPENDENCIES \
 	libboost-system1.58-dev \
 	libboost-thread1.58-dev \
 	libcurl4-openssl-dev \
+	libev-dev \
 	libfaad-dev \
 	libflac-dev \
 	libmicrohttpd-dev \
