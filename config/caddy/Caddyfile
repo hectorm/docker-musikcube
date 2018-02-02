@@ -5,10 +5,10 @@ https://*:7905 {
 	# tls email@example.com {
 	#	dns cloudflare
 	# }
-	log / stdout "[{when_iso}] [{remote} - {host}] [{method} {proto} {status}] {uri}"
 	proxy / 127.0.0.1:7903 {
 		websocket
 	}
+	log / stdout
 }
 
 # audio (file) server
@@ -18,8 +18,8 @@ https://*:7906 {
 	# tls email@example.com {
 	#	dns cloudflare
 	# }
-	log / stdout "[{when_iso}] [{remote} - {host}] [{method} {proto} {status}] {uri}"
 	proxy / 127.0.0.1:7904 {
 		transparent
 	}
+	log / stdout
 }
