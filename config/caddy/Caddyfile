@@ -1,7 +1,6 @@
 # web socket (metadata) server
 # https://example.com:7905 {
 https://*:7905 {
-	gzip
 	tls self_signed
 	# tls email@example.com {
 	#	dns cloudflare
@@ -15,7 +14,6 @@ https://*:7905 {
 # audio (file) server
 # https://example.com:7906 {
 https://*:7906 {
-	gzip
 	tls self_signed
 	# tls email@example.com {
 	#	dns cloudflare
