@@ -19,6 +19,7 @@ docker run --tty --interactive --rm \
 	--memory 128mb \
 	--publish 7905:7905 \
 	--publish 7906:7906 \
+	--env TERM='xterm-256color' \
 	--env USE_MUSIKCUBE_CLIENT=1 \
 	--env MUSIKCUBE_OUTPUT_DRIVER='AlsaOut' \
 	--env MUSIKCUBE_SERVER_PASSWORD='musikcube' \

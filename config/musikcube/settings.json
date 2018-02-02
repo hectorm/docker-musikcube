@@ -1,5 +1,7 @@
 {
   "AutoUpdateCheck": false,
+  "DisableCustomColors": false,
   "FirstRunSettingsDisplayed": true,
-  "SyncOnStartup": true
+  "SyncOnStartup": true,
+  "UsePaletteColors": false
 }
