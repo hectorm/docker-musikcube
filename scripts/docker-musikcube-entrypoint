@@ -28,10 +28,10 @@ printf -- '%s\n' "${PLUGIN_MUSIKCUBESERVER_JSON}" > "${PLUGIN_MUSIKCUBESERVER_FI
 
 # Initialize
 if [ "${USE_MUSIKCUBE_CLIENT}" -eq 1 ]; then
-	caddy --agree --conf "${HOME}/.caddy/Caddyfile" &
+	caddy --agree --conf "${HOME}/Caddyfile" &
 	musikcube
 else
-	caddy --agree --conf "${HOME}/.caddy/Caddyfile" & CADDY_PID=$!
+	caddy --agree --conf "${HOME}/Caddyfile" & CADDY_PID=$!
 	musikcubed --start && MUSIKCUBE_PID=$(cat /tmp/musikcubed.lock)
 	while sleep 30; do
 		if [ ! -e "/proc/${CADDY_PID}" ]; then

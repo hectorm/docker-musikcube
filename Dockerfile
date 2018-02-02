@@ -71,7 +71,7 @@ RUN useradd \
 COPY --chown=root:root patches/ /tmp/patches/
 COPY --chown=root:root config/pulse-client.conf /etc/pulse/client.conf
 COPY --chown=root:root scripts/docker-musikcube-entrypoint /usr/local/bin/
-COPY --chown=musikcube:musikcube config/caddy/ /home/musikcube/.caddy/
+COPY --chown=musikcube:musikcube config/caddy/Caddyfile /home/musikcube/
 COPY --chown=musikcube:musikcube config/musikcube/ /home/musikcube/.musikcube/
 
 RUN uname --all \
