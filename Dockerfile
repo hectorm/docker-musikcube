@@ -1,6 +1,6 @@
 FROM ubuntu:16.04
 
-ARG GOLANG_RELEASE_URL=https://dl.google.com/go/go1.9.3.linux-amd64.tar.gz
+ARG GOLANG_RELEASE_URL=https://dl.google.com/go/go1.10.linux-amd64.tar.gz
 ARG MUSIKCUBE_GIT_REPOSITORY=https://github.com/clangen/musikcube.git
 ARG MUSIKCUBE_GIT_BRANCH=master
 
