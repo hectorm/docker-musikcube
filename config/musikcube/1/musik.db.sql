@@ -1,9 +1,10 @@
+PRAGMA foreign_keys=OFF;
 BEGIN TRANSACTION;
-CREATE TABLE IF NOT EXISTS `version` (
+CREATE TABLE `version` (
 	`version`	INTEGER DEFAULT 1
 );
-INSERT INTO `version` VALUES (7);
-CREATE TABLE IF NOT EXISTS `tracks` (
+INSERT INTO version VALUES(8);
+CREATE TABLE `tracks` (
 	`id`	INTEGER PRIMARY KEY AUTOINCREMENT,
 	`track`	INTEGER DEFAULT 0,
 	`disc`	TEXT DEFAULT '1',
@@ -22,29 +23,29 @@ CREATE TABLE IF NOT EXISTS `tracks` (
 	`source_id`	INTEGER DEFAULT 0,
 	`visible`	INTEGER DEFAULT 1,
 	`external_id`	TEXT DEFAULT null
-);
-CREATE TABLE IF NOT EXISTS `track_meta` (
+, directory_id INTEGER);
+CREATE TABLE `track_meta` (
 	`id`	INTEGER PRIMARY KEY AUTOINCREMENT,
 	`track_id`	INTEGER DEFAULT 0,
 	`meta_value_id`	INTEGER DEFAULT 0
 );
-CREATE TABLE IF NOT EXISTS `track_genres` (
+CREATE TABLE `track_genres` (
 	`id`	INTEGER PRIMARY KEY AUTOINCREMENT,
 	`track_id`	INTEGER DEFAULT 0,
 	`genre_id`	INTEGER DEFAULT 0
 );
-CREATE TABLE IF NOT EXISTS `track_artists` (
+CREATE TABLE `track_artists` (
 	`id`	INTEGER PRIMARY KEY AUTOINCREMENT,
 	`track_id`	INTEGER DEFAULT 0,
 	`artist_id`	INTEGER DEFAULT 0
 );
-CREATE TABLE IF NOT EXISTS `thumbnails` (
+CREATE TABLE `thumbnails` (
 	`id`	INTEGER PRIMARY KEY AUTOINCREMENT,
 	`filename`	TEXT DEFAULT '',
 	`filesize`	INTEGER DEFAULT 0,
 	`checksum`	INTEGER DEFAULT 0
 );
-CREATE TABLE IF NOT EXISTS `replay_gain` (
+CREATE TABLE `replay_gain` (
 	`id`	INTEGER,
 	`track_id`	INTEGER DEFAULT 0,
 	`album_gain`	REAL DEFAULT 1.0,
@@ -53,127 +54,88 @@ CREATE TABLE IF NOT EXISTS `replay_gain` (
 	`track_peak`	REAL DEFAULT 1.0,
 	PRIMARY KEY(`id`)
 );
-CREATE TABLE IF NOT EXISTS `playlists` (
+CREATE TABLE `playlists` (
 	`id`	INTEGER PRIMARY KEY AUTOINCREMENT,
 	`name`	TEXT DEFAULT '',
 	`user_id`	INTEGER DEFAULT 0
 );
-CREATE TABLE IF NOT EXISTS `playlist_tracks` (
+CREATE TABLE `playlist_tracks` (
 	`playlist_id`	INTEGER DEFAULT 0,
 	`track_external_id`	TEXT NOT NULL DEFAULT '',
 	`source_id`	INTEGER DEFAULT 0,
 	`sort_order`	INTEGER DEFAULT 0
 );
-CREATE TABLE IF NOT EXISTS `paths` (
+CREATE TABLE `paths` (
 	`id`	INTEGER PRIMARY KEY AUTOINCREMENT,
 	`path`	TEXT DEFAULT ''
 );
-INSERT INTO `paths` VALUES (1,'/music/');
-CREATE TABLE IF NOT EXISTS `meta_values` (
+INSERT INTO paths VALUES(1,'/music/');
+CREATE TABLE `meta_values` (
 	`id`	INTEGER PRIMARY KEY AUTOINCREMENT,
 	`meta_key_id`	INTEGER DEFAULT 0,
 	`sort_order`	INTEGER DEFAULT 0,
 	`content`	TEXT
 );
-CREATE TABLE IF NOT EXISTS `meta_keys` (
+CREATE TABLE `meta_keys` (
 	`id`	INTEGER PRIMARY KEY AUTOINCREMENT,
 	`name`	TEXT
 );
-CREATE TABLE IF NOT EXISTS `genres` (
+CREATE TABLE `genres` (
 	`id`	INTEGER PRIMARY KEY AUTOINCREMENT,
 	`name`	TEXT DEFAULT '',
 	`aggregated`	INTEGER DEFAULT 0,
 	`sort_order`	INTEGER DEFAULT 0
 );
-CREATE TABLE IF NOT EXISTS `artists` (
+CREATE TABLE `artists` (
 	`id`	INTEGER PRIMARY KEY AUTOINCREMENT,
 	`name`	TEXT DEFAULT '',
 	`aggregated`	INTEGER DEFAULT 0,
 	`sort_order`	INTEGER DEFAULT 0
 );
-CREATE TABLE IF NOT EXISTS `albums` (
+CREATE TABLE `albums` (
 	`id`	INTEGER,
 	`name`	TEXT DEFAULT '',
 	`thumbnail_id`	INTEGER DEFAULT 0,
 	`sort_order`	INTEGER DEFAULT 0,
 	PRIMARY KEY(`id`)
 );
-CREATE INDEX IF NOT EXISTS `tracks_external_id_index` ON `tracks` (
-	`external_id`
-);
-CREATE INDEX IF NOT EXISTS `trackmeta_index2` ON `track_meta` (
-	`meta_value_id`,
-	`track_id`
-);
-CREATE INDEX IF NOT EXISTS `trackmeta_index1` ON `track_meta` (
-	`track_id`,
-	`meta_value_id`
-);
-CREATE INDEX IF NOT EXISTS `trackgenre_index2` ON `track_genres` (
-	`genre_id`,
-	`track_id`
-);
-CREATE INDEX IF NOT EXISTS `trackgenre_index1` ON `track_genres` (
-	`track_id`,
-	`genre_id`
-);
-CREATE INDEX IF NOT EXISTS `trackartist_index2` ON `track_artists` (
-	`artist_id`,
-	`track_id`
-);
-CREATE INDEX IF NOT EXISTS `trackartist_index1` ON `track_artists` (
-	`track_id`,
-	`artist_id`
-);
-CREATE INDEX IF NOT EXISTS `thumbnail_index` ON `thumbnails` (
-	`filesize`
-);
-CREATE INDEX IF NOT EXISTS `playlist_tracks_index_3` ON `playlist_tracks` (
-	`track_external_id`
-);
-CREATE INDEX IF NOT EXISTS `playlist_tracks_index_2` ON `playlist_tracks` (
-	`track_external_id`,
-	`sort_order`
-);
-CREATE INDEX IF NOT EXISTS `playlist_tracks_index_1` ON `playlist_tracks` (
-	`track_external_id`,
-	`playlist_id`,
-	`sort_order`
-);
-CREATE INDEX IF NOT EXISTS `paths_index` ON `paths` (
-	`path`
-);
-CREATE INDEX IF NOT EXISTS `metavalues_index4` ON `meta_values` (
+CREATE TABLE directories (id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL);
+CREATE TABLE last_session_play_queue ( id INTEGER PRIMARY KEY AUTOINCREMENT, track_id INTEGER);
+DELETE FROM sqlite_sequence;
+INSERT INTO sqlite_sequence VALUES('paths',1);
+CREATE INDEX `metavalues_index4` ON `meta_values` (
 	`id`,
 	`content`
 );
-CREATE INDEX IF NOT EXISTS `metavalues_index3` ON `meta_values` (
+CREATE INDEX `metavalues_index3` ON `meta_values` (
 	`id`,
 	`meta_key_id`,
 	`content`
 );
-CREATE INDEX IF NOT EXISTS `metavalues_index2` ON `meta_values` (
+CREATE INDEX `metavalues_index2` ON `meta_values` (
 	`content`
 );
-CREATE INDEX IF NOT EXISTS `metavalues_index1` ON `meta_values` (
-	`meta_key_id`
-);
-CREATE INDEX IF NOT EXISTS `metakey_index2` ON `meta_keys` (
+CREATE INDEX `metakey_index2` ON `meta_keys` (
 	`id`,
 	`name`
 );
-CREATE INDEX IF NOT EXISTS `metakey_index1` ON `meta_keys` (
-	`name`
-);
-CREATE INDEX IF NOT EXISTS `genre_index` ON `genres` (
-	`sort_order`
-);
-CREATE INDEX IF NOT EXISTS `artist_index` ON `artists` (
-	`sort_order`
-);
-CREATE INDEX IF NOT EXISTS `album_index` ON `albums` (
-	`sort_order`
-);
-CREATE VIEW tracks_view AS SELECT DISTINCT  t.id, t.track, t.disc, t.bpm, t.duration, t.filesize, t.title, t.filename,  t.thumbnail_id, t.external_id, al.name AS album, alar.name AS album_artist, gn.name AS genre,  ar.name AS artist, t.filetime, t.visual_genre_id, t.visual_artist_id, t.album_artist_id, t.album_id FROM  tracks t, albums al, artists alar, artists ar, genres gn WHERE  t.album_id=al.id AND t.album_artist_id=alar.id AND  t.visual_genre_id=gn.id AND t.visual_artist_id=ar.id;
 CREATE VIEW extended_metadata AS SELECT DISTINCT tracks.id, tracks.external_id, tracks.source_id, meta_keys.id AS meta_key_id, track_meta.meta_value_id, meta_keys.name AS key, meta_values.content AS value FROM track_meta, meta_values, meta_keys, tracks WHERE tracks.id == track_meta.track_id AND meta_values.id = track_meta.meta_value_id AND meta_values.meta_key_id == meta_keys.id;
+CREATE VIEW tracks_view AS SELECT DISTINCT  t.id, t.track, t.disc, t.bpm, t.duration, t.filesize, t.title, t.filename,  t.thumbnail_id, t.external_id, al.name AS album, alar.name AS album_artist, gn.name AS genre,  ar.name AS artist, t.filetime, t.visual_genre_id, t.visual_artist_id, t.album_artist_id, t.album_id FROM  tracks t, albums al, artists alar, artists ar, genres gn WHERE  t.album_id=al.id AND t.album_artist_id=alar.id AND  t.visual_genre_id=gn.id AND t.visual_artist_id=ar.id;
+CREATE INDEX paths_index ON paths (path);
+CREATE INDEX genre_index ON genres (sort_order);
+CREATE INDEX artist_index ON artists (sort_order);
+CREATE INDEX album_index ON albums (sort_order);
+CREATE INDEX thumbnail_index ON thumbnails (filesize);
+CREATE INDEX trackgenre_index1 ON track_genres (track_id,genre_id);
+CREATE INDEX trackgenre_index2 ON track_genres (genre_id,track_id);
+CREATE INDEX trackartist_index1 ON track_artists (track_id,artist_id);
+CREATE INDEX trackartist_index2 ON track_artists (artist_id,track_id);
+CREATE INDEX trackmeta_index1 ON track_meta (track_id,meta_value_id);
+CREATE INDEX trackmeta_index2 ON track_meta (meta_value_id,track_id);
+CREATE INDEX metakey_index1 ON meta_keys (name);
+CREATE INDEX metavalues_index1 ON meta_values (meta_key_id);
+CREATE INDEX tracks_external_id_index ON tracks (external_id);
+CREATE INDEX playlist_tracks_index_1 ON playlist_tracks (track_external_id,playlist_id,sort_order);
+CREATE INDEX playlist_tracks_index_2 ON playlist_tracks (track_external_id,sort_order);
+CREATE INDEX playlist_tracks_index_3 ON playlist_tracks (track_external_id);
 COMMIT;
