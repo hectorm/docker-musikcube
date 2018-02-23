@@ -8,6 +8,12 @@ create_empty_json_file() {
 	fi
 }
 
+clean_pidfile() {
+	if [ -f "$1" ] && [ ! -e "/proc/$(cat "$1")" ]; then
+		rm -f "$1"
+	fi
+}
+
 # Set playback options
 PLAYBACK_FILE="${HOME}/.musikcube/playback.json"
 create_empty_json_file "${PLAYBACK_FILE}"
@@ -31,8 +37,12 @@ if [ "${USE_MUSIKCUBE_CLIENT}" -eq 1 ]; then
 	caddy --agree --conf "${HOME}/Caddyfile" &
 	musikcube
 else
+	MUSIKCUBE_PIDFILE='/tmp/musikcubed.lock'
+	clean_pidfile "${MUSIKCUBE_PIDFILE}"
+
 	caddy --agree --conf "${HOME}/Caddyfile" & CADDY_PID=$!
-	musikcubed --start && MUSIKCUBE_PID=$(cat /tmp/musikcubed.lock)
+	musikcubed --start && MUSIKCUBE_PID=$(cat "${MUSIKCUBE_PIDFILE}")
+
 	while sleep 30; do
 		if [ ! -e "/proc/${CADDY_PID}" ]; then
 			printf -- '%s\n' 'Caddy is not running, exiting...'
