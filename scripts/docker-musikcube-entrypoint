@@ -33,14 +33,15 @@ PLUGIN_MUSIKCUBESERVER_JSON=$(jq \
 printf -- '%s\n' "${PLUGIN_MUSIKCUBESERVER_JSON}" > "${PLUGIN_MUSIKCUBESERVER_FILE}"
 
 # Initialize
+MUSIKCUBE_CADDYFILE="${HOME}/.musikcube/Caddyfile"
 if [ "${USE_MUSIKCUBE_CLIENT}" -eq 1 ]; then
-	caddy --agree --conf "${HOME}/Caddyfile" &
+	caddy --agree --conf "${MUSIKCUBE_CADDYFILE}" &
 	musikcube
 else
 	MUSIKCUBE_PIDFILE='/tmp/musikcubed.lock'
 	clean_pidfile "${MUSIKCUBE_PIDFILE}"
 
-	caddy --agree --conf "${HOME}/Caddyfile" & CADDY_PID=$!
+	caddy --agree --conf "${MUSIKCUBE_CADDYFILE}" & CADDY_PID=$!
 	musikcubed --start && MUSIKCUBE_PID=$(cat "${MUSIKCUBE_PIDFILE}")
 
 	while sleep 30; do

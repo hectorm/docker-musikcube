@@ -101,7 +101,6 @@ RUN apt-get update \
 COPY config/pulse-client.conf /etc/pulse/client.conf
 
 COPY --from=build /usr/local/bin/caddy /usr/local/bin/caddy
-COPY config/caddy/Caddyfile /home/musikcube/Caddyfile
 
 COPY --from=build /usr/local/bin/musikcube /usr/local/bin/musikcube
 COPY --from=build /usr/local/bin/musikcubed /usr/local/bin/musikcubed
