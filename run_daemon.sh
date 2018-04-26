@@ -13,6 +13,7 @@ docker run --detach \
 	--cpus 1 \
 	--memory 128mb \
 	--restart on-failure:3 \
+	--log-opt max-size=100m \
 	--publish 7905:7905/tcp \
 	--publish 7906:7906/tcp \
 	--mount type=volume,src='musikcube-caddy-data',dst='/home/musikcube/.caddy' \
