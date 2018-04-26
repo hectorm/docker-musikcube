@@ -22,11 +22,17 @@ docker run --tty --interactive --rm \
 	--env TERM='xterm-256color' \
 	--env USE_MUSIKCUBE_CLIENT=1 \
 	--env MUSIKCUBE_OUTPUT_DRIVER='AlsaOut' \
-	--env MUSIKCUBE_SERVER_PASSWORD='musikcube' \
-	--env CLOUDFLARE_EMAIL='email@example.com' \
-	--env CLOUDFLARE_API_KEY='xxxxxxxxxxxxxxx' \
 	--mount type=volume,src='musikcube-caddy-data',dst='/home/musikcube/.caddy' \
 	--mount type=volume,src='musikcube-app-data',dst='/home/musikcube/.musikcube' \
+	${MUSIKCUBE_SERVER_PASSWORD:+ \
+		--env MUSIKCUBE_SERVER_PASSWORD="${MUSIKCUBE_SERVER_PASSWORD}" \
+	} \
+	${CLOUDFLARE_EMAIL:+ \
+		--env CLOUDFLARE_EMAIL="${CLOUDFLARE_EMAIL}" \
+	} \
+	${CLOUDFLARE_API_KEY:+ \
+		--env CLOUDFLARE_API_KEY="${CLOUDFLARE_API_KEY}" \
+	} \
 	${HOST_MUSIC_FOLDER:+ \
 		--mount type=bind,src="${HOST_MUSIC_FOLDER}",dst="${CONTAINER_MUSIC_FOLDER}",ro \
 	} \

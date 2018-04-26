@@ -15,11 +15,17 @@ docker run --detach \
 	--publish 7905:7905 \
 	--publish 7906:7906 \
 	--restart on-failure:10 \
-	--env MUSIKCUBE_SERVER_PASSWORD='musikcube' \
-	--env CLOUDFLARE_EMAIL='email@example.com' \
-	--env CLOUDFLARE_API_KEY='xxxxxxxxxxxxxxx' \
 	--mount type=volume,src='musikcube-caddy-data',dst='/home/musikcube/.caddy' \
 	--mount type=volume,src='musikcube-app-data',dst='/home/musikcube/.musikcube' \
+	${MUSIKCUBE_SERVER_PASSWORD:+ \
+		--env MUSIKCUBE_SERVER_PASSWORD="${MUSIKCUBE_SERVER_PASSWORD}" \
+	} \
+	${CLOUDFLARE_EMAIL:+ \
+		--env CLOUDFLARE_EMAIL="${CLOUDFLARE_EMAIL}" \
+	} \
+	${CLOUDFLARE_API_KEY:+ \
+		--env CLOUDFLARE_API_KEY="${CLOUDFLARE_API_KEY}" \
+	} \
 	${HOST_MUSIC_FOLDER:+ \
 		--mount type=bind,src="${HOST_MUSIC_FOLDER}",dst="${CONTAINER_MUSIC_FOLDER}",ro \
 	} \
