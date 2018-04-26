@@ -74,6 +74,7 @@ RUN apt-get update \
 	&& apt-get install \
 		--assume-yes \
 		--no-install-recommends \
+		ca-certificates \
 		jq \
 		libasound2 \
 		libboost-atomic1.58.0 \
