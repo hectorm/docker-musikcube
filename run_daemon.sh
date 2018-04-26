@@ -10,7 +10,7 @@ fi
 docker rm --force musikcube 2>/dev/null || true
 docker run --detach \
 	--name musikcube \
-	--cpus 1 \
+	--cpus 0.5 \
 	--memory 128mb \
 	--restart on-failure:3 \
 	--log-opt max-size=100m \

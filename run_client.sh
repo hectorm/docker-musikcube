@@ -15,7 +15,7 @@ fi
 docker rm --force musikcube 2>/dev/null || true
 docker run --tty --interactive --rm \
 	--name musikcube \
-	--cpus 1 \
+	--cpus 0.5 \
 	--memory 128mb \
 	--log-driver none \
 	--publish 7905:7905/tcp \
