@@ -2,33 +2,21 @@
 
 set -eu
 
-create_empty_json_file() {
-	if [ ! -f "$1" ]; then
-		printf '{}\n' > "$1"
-	fi
-}
-
-clean_pidfile() {
-	if [ -f "$1" ] && [ ! -e "/proc/$(cat "$1")" ]; then
-		rm -f "$1"
-	fi
-}
-
 # Set playback options
 PLAYBACK_FILE="${HOME}/.musikcube/playback.json"
-create_empty_json_file "${PLAYBACK_FILE}"
+[ ! -f "${PLAYBACK_FILE}" ] && printf '{}' > "${PLAYBACK_FILE}"
 PLAYBACK_FILE_JSON=$(jq \
-	--arg OutputPlugin "${MUSIKCUBE_OUTPUT_DRIVER}" \
-	'.+{OutputPlugin: $OutputPlugin}' "${PLAYBACK_FILE}"
+	--arg OutputPlugin "${MUSIKCUBE_OUTPUT_DRIVER}" '.+{OutputPlugin: $OutputPlugin}' \
+	"${PLAYBACK_FILE}"
 )
 printf -- '%s\n' "${PLAYBACK_FILE_JSON}" > "${PLAYBACK_FILE}"
 
 # Set musikcubeserver options
 PLUGIN_MUSIKCUBESERVER_FILE="${HOME}/.musikcube/plugin_musikcubeserver(wss,http).json"
-create_empty_json_file "${PLUGIN_MUSIKCUBESERVER_FILE}"
+[ ! -f "${PLUGIN_MUSIKCUBESERVER_FILE}" ] && printf '{}' > "${PLUGIN_MUSIKCUBESERVER_FILE}"
 PLUGIN_MUSIKCUBESERVER_JSON=$(jq \
-	--arg password "${MUSIKCUBE_SERVER_PASSWORD}" \
-	'.+{password: $password}' "${PLUGIN_MUSIKCUBESERVER_FILE}"
+	--arg password "${MUSIKCUBE_SERVER_PASSWORD}" '.+{password: $password}' \
+	"${PLUGIN_MUSIKCUBESERVER_FILE}"
 )
 printf -- '%s\n' "${PLUGIN_MUSIKCUBESERVER_JSON}" > "${PLUGIN_MUSIKCUBESERVER_FILE}"
 
@@ -36,13 +24,12 @@ printf -- '%s\n' "${PLUGIN_MUSIKCUBESERVER_JSON}" > "${PLUGIN_MUSIKCUBESERVER_FI
 MUSIKCUBE_CADDYFILE="${HOME}/.musikcube/Caddyfile"
 if [ "${USE_MUSIKCUBE_CLIENT}" -eq 1 ]; then
 	caddy --agree --conf "${MUSIKCUBE_CADDYFILE}" &
-	musikcube
+	exec musikcube
 else
-	MUSIKCUBE_PIDFILE='/tmp/musikcubed.lock'
-	clean_pidfile "${MUSIKCUBE_PIDFILE}"
-
 	caddy --agree --conf "${MUSIKCUBE_CADDYFILE}" & CADDY_PID=$!
-	musikcubed --start && MUSIKCUBE_PID=$(cat "${MUSIKCUBE_PIDFILE}")
+
+	rm -f -- '/tmp/musikcubed.lock'
+	musikcubed --start && MUSIKCUBE_PID=$(cat '/tmp/musikcubed.lock')
 
 	while sleep 30; do
 		if [ ! -e "/proc/${CADDY_PID}" ]; then

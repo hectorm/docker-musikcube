@@ -109,7 +109,7 @@ COPY --from=build /usr/local/share/musikcube/ /usr/local/share/musikcube/
 COPY config/musikcube/ /home/musikcube/.musikcube/
 COPY --from=build /tmp/musik.db /home/musikcube/.musikcube/1/musik.db
 
-COPY scripts/docker-musikcube-entrypoint /usr/local/bin/docker-musikcube-entrypoint
+COPY scripts/docker-foreground-cmd /usr/local/bin/docker-foreground-cmd
 
 # Setup locale
 RUN locale-gen en_US.UTF-8
@@ -131,7 +131,9 @@ RUN groupadd \
 		--groups audio \
 		--home-dir /home/musikcube \
 		musikcube \
-	&& mkdir -p /home/musikcube/{.caddy,.musikcube} \
+	&& mkdir -p \
+		/home/musikcube/.caddy \
+		/home/musikcube/.musikcube \
 	&& chown -R musikcube:musikcube /home/musikcube
 
 ENV USE_MUSIKCUBE_CLIENT=0
@@ -147,4 +149,4 @@ WORKDIR /home/musikcube
 EXPOSE 7905 7906
 
 USER musikcube:musikcube
-ENTRYPOINT ["docker-musikcube-entrypoint"]
+CMD ["docker-foreground-cmd"]
