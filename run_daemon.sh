@@ -7,8 +7,10 @@ if [ -d "${HOME}/Music" ]; then
 	CONTAINER_MUSIC_FOLDER='/music'
 fi
 
-docker rm --force musikcube 2>/dev/null || true
-docker run --detach \
+docker stop musikcube 2>/dev/null || true
+docker rm musikcube 2>/dev/null || true
+
+exec docker run --detach \
 	--name musikcube \
 	--cpus 0.5 \
 	--memory 128mb \

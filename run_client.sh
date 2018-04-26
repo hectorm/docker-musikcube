@@ -12,8 +12,10 @@ if [ -S "${XDG_RUNTIME_DIR:-}/pulse/native" ]; then
 	CONTAINER_PULSEAUDIO_SOCKET='/run/user/1000/pulse/native'
 fi
 
-docker rm --force musikcube 2>/dev/null || true
-docker run --tty --interactive --rm \
+docker stop musikcube 2>/dev/null || true
+docker rm musikcube 2>/dev/null || true
+
+exec docker run --tty --interactive --rm \
 	--name musikcube \
 	--cpus 0.5 \
 	--memory 128mb \
