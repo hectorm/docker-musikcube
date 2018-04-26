@@ -12,9 +12,9 @@ docker run --detach \
 	--name musikcube \
 	--cpus 1 \
 	--memory 128mb \
+	--restart on-failure:3 \
 	--publish 7905:7905/tcp \
 	--publish 7906:7906/tcp \
-	--restart on-failure:10 \
 	--mount type=volume,src='musikcube-caddy-data',dst='/home/musikcube/.caddy' \
 	--mount type=volume,src='musikcube-app-data',dst='/home/musikcube/.musikcube' \
 	${MUSIKCUBE_SERVER_PASSWORD:+ \
