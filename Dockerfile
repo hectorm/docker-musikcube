@@ -33,7 +33,7 @@ RUN apt-get update \
 	&& rm -rf /var/lib/apt/lists/*
 
 # Build Caddy
-ARG GOLANG_RELEASE_URL=https://dl.google.com/go/go1.10.linux-amd64.tar.gz
+ARG GOLANG_RELEASE_URL=https://dl.google.com/go/go1.10.1.linux-amd64.tar.gz
 COPY patches/caddy-import-plugins.patch /tmp/caddy-import-plugins.patch
 RUN mkdir /tmp/goroot /tmp/gopath \
 	&& export GOROOT=/tmp/goroot \
