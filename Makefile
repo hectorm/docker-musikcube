@@ -5,7 +5,7 @@ MKFILE_ABSPATH := $(shell readlink -f -- '$(MKFILE_RELPATH)')
 MKFILE_DIR := $(shell dirname -- '$(MKFILE_ABSPATH)')
 
 MUSIKCUBE_GIT_REPOSITORY := https://github.com/clangen/musikcube.git
-MUSIKCUBE_GIT_BRANCH := 0.42.0
+MUSIKCUBE_GIT_BRANCH := 0.50.0
 
 .PHONY: all \
 	build build-image \
