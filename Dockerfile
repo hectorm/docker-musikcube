@@ -1,11 +1,9 @@
-FROM ubuntu:16.04 AS build
+FROM ubuntu:18.04 AS build
 
 # Install dependencies
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
-	&& apt-get install \
-		--assume-yes \
-		--no-install-recommends \
+	&& apt-get install --assume-yes --no-install-recommends \
 		build-essential \
 		ca-certificates \
 		clang \
@@ -13,12 +11,12 @@ RUN apt-get update \
 		curl \
 		git \
 		libasound2-dev \
-		libboost-atomic1.58-dev \
-		libboost-chrono1.58-dev \
-		libboost-date-time1.58-dev \
-		libboost-filesystem1.58-dev \
-		libboost-system1.58-dev \
-		libboost-thread1.58-dev \
+		libboost-atomic1.65-dev \
+		libboost-chrono1.65-dev \
+		libboost-date-time1.65-dev \
+		libboost-filesystem1.65-dev \
+		libboost-system1.65-dev \
+		libboost-thread1.65-dev \
 		libcurl4-openssl-dev \
 		libev-dev \
 		libfaad-dev \
@@ -28,12 +26,13 @@ RUN apt-get update \
 		libncursesw5-dev \
 		libogg-dev \
 		libpulse-dev \
+		libssl-dev \
 		libvorbis-dev \
 		sqlite3 \
 	&& rm -rf /var/lib/apt/lists/*
 
 # Build Caddy
-ARG GOLANG_RELEASE_URL=https://dl.google.com/go/go1.10.1.linux-amd64.tar.gz
+ARG GOLANG_RELEASE_URL=https://dl.google.com/go/go1.10.3.linux-amd64.tar.gz
 COPY patches/caddy-import-plugins.patch /tmp/caddy-import-plugins.patch
 RUN mkdir /tmp/goroot /tmp/gopath \
 	&& export GOROOT=/tmp/goroot \
@@ -66,32 +65,32 @@ RUN mkdir /tmp/musikcube \
 COPY config/musikcube/1/musik.db.sql /tmp/musik.db.sql
 RUN sqlite3 /tmp/musik.db < /tmp/musik.db.sql
 
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 # Install dependencies
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
-	&& apt-get install \
-		--assume-yes \
-		--no-install-recommends \
+	&& apt-get install --assume-yes --no-install-recommends \
 		ca-certificates \
 		jq \
 		libasound2 \
-		libboost-atomic1.58.0 \
-		libboost-chrono1.58.0 \
-		libboost-date-time1.58.0 \
-		libboost-filesystem1.58.0 \
-		libboost-system1.58.0 \
-		libboost-thread1.58.0 \
-		libcurl3 \
+		libboost-atomic1.65.1 \
+		libboost-chrono1.65.1 \
+		libboost-date-time1.65.1 \
+		libboost-filesystem1.65.1 \
+		libboost-system1.65.1 \
+		libboost-thread1.65.1 \
+		libcap2-bin \
+		libcurl4 \
 		libev4 \
 		libfaad2 \
 		libflac8 \
-		libmicrohttpd10 \
+		libmicrohttpd12 \
 		libmp3lame0 \
 		libncursesw5 \
 		libogg0 \
 		libpulse0 \
+		libssl1.1 \
 		libvorbis0a \
 		libvorbisfile3 \
 		locales \
