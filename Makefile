@@ -4,36 +4,46 @@ MKFILE_RELPATH := $(shell printf -- '%s' '$(MAKEFILE_LIST)' | sed 's|^\ ||')
 MKFILE_ABSPATH := $(shell readlink -f -- '$(MKFILE_RELPATH)')
 MKFILE_DIR := $(shell dirname -- '$(MKFILE_ABSPATH)')
 
-MUSIKCUBE_GIT_REPOSITORY := https://github.com/clangen/musikcube.git
-MUSIKCUBE_GIT_BRANCH := 0.50.0
+CADDY_BRANCH := v0.11.0
+MUSIKCUBE_BRANCH := 0.50.0
+
+DIST_DIR := $(MKFILE_DIR)/dist
+
+DOCKER_IMAGE := musikcube
+DOCKER_IMAGE_TARBALL := $(DIST_DIR)/$(DOCKER_IMAGE).tgz
+DOCKER_CONTAINER := $(DOCKER_IMAGE)
+DOCKERFILE := $(MKFILE_DIR)/Dockerfile
 
 .PHONY: all \
-	build build-image \
-	clean clean-image clean-dist
+	build build-image save-image \
+	clean clean-image clean-container clean-dist
 
 all: build
 
-build: dist/musikcube.tgz
+build: save-image
 
 build-image:
 	docker build \
-		--rm \
-		--tag musikcube \
-		--build-arg MUSIKCUBE_GIT_REPOSITORY='$(MUSIKCUBE_GIT_REPOSITORY)' \
-		--build-arg MUSIKCUBE_GIT_BRANCH='$(MUSIKCUBE_GIT_BRANCH)' \
-		'$(MKFILE_DIR)'
+		--tag '$(DOCKER_IMAGE):latest' \
+		--tag '$(DOCKER_IMAGE):$(MUSIKCUBE_BRANCH)' \
+		--build-arg CADDY_BRANCH='$(CADDY_BRANCH)' \
+		--build-arg MUSIKCUBE_BRANCH='$(MUSIKCUBE_BRANCH)' \
+		--file '$(DOCKERFILE)' \
+		-- '$(MKFILE_DIR)'
 
-dist/:
-	mkdir -p dist
-
-dist/musikcube.tgz: dist/ build-image
-	docker save musikcube | gzip > dist/musikcube.tgz
+save-image: build-image
+	mkdir -p -- '$(DIST_DIR)'
+	docker save -- '$(DOCKER_IMAGE)' | gzip > '$(DOCKER_IMAGE_TARBALL)'
 
 clean: clean-image clean-dist
 
-clean-image:
-	-docker rmi musikcube
+clean-image: clean-container
+	-docker rmi -- '$(DOCKER_IMAGE)'
+
+clean-container:
+	-docker stop -- '$(DOCKER_CONTAINER)'
+	-docker rm -- '$(DOCKER_CONTAINER)'
 
 clean-dist:
-	rm -f dist/musikcube.tgz
-	-rmdir dist
+	rm -f -- '$(DOCKER_IMAGE_TARBALL)'
+	-rmdir -- '$(DIST_DIR)'

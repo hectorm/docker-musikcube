@@ -3,7 +3,7 @@ FROM ubuntu:18.04 AS build
 # Install dependencies
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
-	&& apt-get install --assume-yes --no-install-recommends \
+	&& apt-get install -y --no-install-recommends \
 		build-essential \
 		ca-certificates \
 		clang \
@@ -31,31 +31,39 @@ RUN apt-get update \
 		sqlite3 \
 	&& rm -rf /var/lib/apt/lists/*
 
+# Copy patches
+COPY patches/ /tmp/patches/
+
 # Build Caddy
-ARG GOLANG_RELEASE_URL=https://dl.google.com/go/go1.10.3.linux-amd64.tar.gz
-COPY patches/caddy-import-plugins.patch /tmp/caddy-import-plugins.patch
+ARG CADDY_BRANCH=master
+ARG GOLANG_RELEASE_PKG=go1.10.3.linux-amd64.tar.gz
+
 RUN mkdir /tmp/goroot /tmp/gopath \
 	&& export GOROOT=/tmp/goroot \
 	&& export GOPATH=/tmp/gopath \
 	&& export PATH="${PATH}:${GOROOT}/bin" \
-	&& curl -fsSL "${GOLANG_RELEASE_URL}" | tar xzf - --strip-components=1 -C "${GOROOT}" \
+	&& curl -fsSL "https://dl.google.com/go/${GOLANG_RELEASE_PKG}" \
+		| tar xzf - --strip-components=1 -C "${GOROOT}" \
 	&& go get -u github.com/mholt/caddy \
 	&& go get -u github.com/caddyserver/builds \
 	&& go get -u github.com/caddyserver/dnsproviders/cloudflare \
 	&& cd "${GOPATH}/src/github.com/mholt/caddy/caddy" \
-	&& git apply /tmp/caddy-import-plugins.patch \
+	&& git checkout "${CADDY_BRANCH}" \
+	&& git apply -v /tmp/patches/caddy-import-plugins.patch \
+	&& git apply -v /tmp/patches/caddy-disable-telemetry.patch \
 	&& go run build.go \
 	&& ./caddy --version \
 	&& ./caddy --plugins \
 	&& mv ./caddy /usr/local/bin/caddy
 
 # Build musikcube
-ARG MUSIKCUBE_GIT_REPOSITORY=https://github.com/clangen/musikcube.git
-ARG MUSIKCUBE_GIT_BRANCH=master
+ARG MUSIKCUBE_BRANCH=master
+ARG MUSIKCUBE_REMOTE=https://github.com/clangen/musikcube.git
+
 RUN mkdir /tmp/musikcube \
 	&& cd /tmp/musikcube \
-	&& git clone "${MUSIKCUBE_GIT_REPOSITORY}" --recursive . \
-	&& git checkout "${MUSIKCUBE_GIT_BRANCH}" \
+	&& git clone "${MUSIKCUBE_REMOTE}" --recursive . \
+	&& git checkout "${MUSIKCUBE_BRANCH}" \
 	&& cmake . \
 	&& make -j$(nproc) \
 	&& cmake . \
@@ -70,7 +78,7 @@ FROM ubuntu:18.04
 # Install dependencies
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
-	&& apt-get install --assume-yes --no-install-recommends \
+	&& apt-get install -y --no-install-recommends \
 		ca-certificates \
 		jq \
 		libasound2 \

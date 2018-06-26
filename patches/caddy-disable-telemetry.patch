@@ -1,0 +1,8 @@
+diff --git a/caddy/caddymain/run.go b/caddy/caddymain/run.go
+index 4c8adcb..c1f6375 100644
+--- a/caddy/caddymain/run.go
++++ b/caddy/caddymain/run.go
+@@ -436,2 +436,2 @@ var (
+
+-const enableTelemetry = true
++const enableTelemetry = false
