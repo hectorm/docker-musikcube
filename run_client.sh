@@ -3,14 +3,14 @@
 set -eu
 export LC_ALL=C
 
-DOCKER_IMAGE=musikcube:latest
+DOCKER_IMAGE=hectormolinero/musikcube:latest
 DOCKER_CONTAINER=musikcube
 DOCKER_CADDY_VOLUME="${DOCKER_CONTAINER}"-caddy-data
 DOCKER_APP_VOLUME="${DOCKER_CONTAINER}"-app-data
 
 imageExists() { [ -n "$(docker images -q "$1")" ]; }
-containerExists() { docker ps -aqf name="$1" --format '{{.Names}}' | grep -qw "$1"; }
-containerIsRunning() { docker ps -qf name="$1" --format '{{.Names}}' | grep -qw "$1"; }
+containerExists() { docker ps -aqf name="$1" --format '{{.Names}}' | grep -Fxq "$1"; }
+containerIsRunning() { docker ps -qf name="$1" --format '{{.Names}}' | grep -Fxq "$1"; }
 
 if ! imageExists "${DOCKER_IMAGE}"; then
 	>&2 printf -- '%s\n' "${DOCKER_IMAGE} image doesn't exist!"
