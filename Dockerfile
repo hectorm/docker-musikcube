@@ -35,7 +35,7 @@ RUN apt-get update \
 COPY patches/ /tmp/patches/
 
 # Build Caddy
-ARG CADDY_BRANCH=master
+ARG CADDY_BRANCH=v0.11.0
 ARG GOLANG_RELEASE_PKG=go1.10.3.linux-amd64.tar.gz
 
 RUN mkdir /tmp/goroot /tmp/gopath \
@@ -57,7 +57,7 @@ RUN mkdir /tmp/goroot /tmp/gopath \
 	&& mv ./caddy /usr/local/bin/caddy
 
 # Build musikcube
-ARG MUSIKCUBE_BRANCH=master
+ARG MUSIKCUBE_BRANCH=0.50.0
 ARG MUSIKCUBE_REMOTE=https://github.com/clangen/musikcube.git
 
 RUN mkdir /tmp/musikcube \
