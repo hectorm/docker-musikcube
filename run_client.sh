@@ -41,8 +41,6 @@ printf -- '%s\n' "Creating \"${DOCKER_CONTAINER}\" container..."
 exec docker run --tty --interactive --rm \
 	--name "${DOCKER_CONTAINER}" \
 	--hostname "${DOCKER_CONTAINER}" \
-	--cpus 0.5 \
-	--memory 128mb \
 	--log-driver none \
 	--publish '7905:7905/tcp' \
 	--publish '7906:7906/tcp' \
