@@ -21,7 +21,7 @@ PLUGIN_MUSIKCUBESERVER_JSON=$(jq \
 printf -- '%s\n' "${PLUGIN_MUSIKCUBESERVER_JSON}" > "${PLUGIN_MUSIKCUBESERVER_FILE}"
 
 # Initialize
-MUSIKCUBE_CADDYFILE="${HOME}/.musikcube/Caddyfile"
+MUSIKCUBE_CADDYFILE="${HOME}/.caddy/Caddyfile"
 if [ "${USE_MUSIKCUBE_CLIENT}" -eq 1 ]; then
 	caddy --agree --conf "${MUSIKCUBE_CADDYFILE}" &
 	exec musikcube

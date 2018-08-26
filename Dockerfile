@@ -1,7 +1,32 @@
-FROM ubuntu:18.04 AS build
+FROM golang:1-stretch AS build-caddy
 
-# Install dependencies
-ENV DEBIAN_FRONTEND noninteractive
+ARG CADDY_BRANCH=v0.11.0
+
+# Copy Caddy patches
+COPY patches/caddy-* /tmp/patches/
+
+# Build Caddy
+RUN go get -u github.com/mholt/caddy \
+	&& go get -u github.com/caddyserver/builds \
+	&& go get -u github.com/caddyserver/dnsproviders/cloudflare \
+	&& cd "${GOPATH}/src/github.com/mholt/caddy/caddy" \
+	&& git checkout "${CADDY_BRANCH}" \
+	&& git apply -v /tmp/patches/caddy-*.patch \
+	&& go run build.go \
+	&& ./caddy --version \
+	&& ./caddy --plugins \
+	&& mv ./caddy /usr/local/bin/caddy
+
+FROM ubuntu:18.04 AS build-musikcube
+
+ARG MUSIKCUBE_BRANCH=0.51.0
+ARG MUSIKCUBE_REMOTE=https://github.com/clangen/musikcube.git
+
+# Copy musikcube patches
+#COPY patches/musikcube-* /tmp/patches/
+
+# Install musikcube build dependencies
+ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
 	&& apt-get install -y --no-install-recommends \
 		build-essential \
@@ -28,38 +53,9 @@ RUN apt-get update \
 		libpulse-dev \
 		libssl-dev \
 		libvorbis-dev \
-		sqlite3 \
-	&& rm -rf /var/lib/apt/lists/*
-
-# Copy patches
-COPY patches/ /tmp/patches/
-
-# Build Caddy
-ARG CADDY_BRANCH=v0.11.0
-ARG GOLANG_RELEASE_PKG=go1.10.3.linux-amd64.tar.gz
-
-RUN mkdir /tmp/goroot /tmp/gopath \
-	&& export GOROOT=/tmp/goroot \
-	&& export GOPATH=/tmp/gopath \
-	&& export PATH="${PATH}:${GOROOT}/bin" \
-	&& curl -fsSL "https://dl.google.com/go/${GOLANG_RELEASE_PKG}" \
-		| tar xzf - --strip-components=1 -C "${GOROOT}" \
-	&& go get -u github.com/mholt/caddy \
-	&& go get -u github.com/caddyserver/builds \
-	&& go get -u github.com/caddyserver/dnsproviders/cloudflare \
-	&& cd "${GOPATH}/src/github.com/mholt/caddy/caddy" \
-	&& git checkout "${CADDY_BRANCH}" \
-	&& git apply -v /tmp/patches/caddy-import-plugins.patch \
-	&& git apply -v /tmp/patches/caddy-disable-telemetry.patch \
-	&& go run build.go \
-	&& ./caddy --version \
-	&& ./caddy --plugins \
-	&& mv ./caddy /usr/local/bin/caddy
+		sqlite3
 
 # Build musikcube
-ARG MUSIKCUBE_BRANCH=0.50.0
-ARG MUSIKCUBE_REMOTE=https://github.com/clangen/musikcube.git
-
 RUN mkdir /tmp/musikcube \
 	&& cd /tmp/musikcube \
 	&& git clone "${MUSIKCUBE_REMOTE}" --recursive . \
@@ -75,8 +71,8 @@ RUN sqlite3 /tmp/musik.db < /tmp/musik.db.sql
 
 FROM ubuntu:18.04
 
-# Install dependencies
-ENV DEBIAN_FRONTEND noninteractive
+# Install runtime dependencies
+ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
 	&& apt-get install -y --no-install-recommends \
 		ca-certificates \
@@ -105,28 +101,6 @@ RUN apt-get update \
 		pulseaudio \
 	&& rm -rf /var/lib/apt/lists/*
 
-# Copy files
-COPY config/pulse-client.conf /etc/pulse/client.conf
-
-COPY --from=build /usr/local/bin/caddy /usr/local/bin/caddy
-
-COPY --from=build /usr/local/bin/musikcube /usr/local/bin/musikcube
-COPY --from=build /usr/local/bin/musikcubed /usr/local/bin/musikcubed
-COPY --from=build /usr/local/share/musikcube/ /usr/local/share/musikcube/
-
-COPY config/musikcube/ /home/musikcube/.musikcube/
-COPY --from=build /tmp/musik.db /home/musikcube/.musikcube/1/musik.db
-
-COPY scripts/docker-foreground-cmd /usr/local/bin/docker-foreground-cmd
-
-# Setup locale
-RUN locale-gen en_US.UTF-8
-ENV LANG=en_US.UTF-8
-ENV LC_ALL=en_US.UTF-8
-
-# Give Caddy permission to bind to port 80 and 443
-RUN setcap cap_net_bind_service=+ep /usr/local/bin/caddy
-
 # Create musikcube group, user and folders
 ARG MUSIKCUBE_USER_UID=1000
 ARG MUSIKCUBE_USER_GID=1000
@@ -138,23 +112,47 @@ RUN groupadd \
 		--gid musikcube \
 		--groups audio \
 		--home-dir /home/musikcube \
-		musikcube \
-	&& mkdir -p \
-		/home/musikcube/.caddy \
-		/home/musikcube/.musikcube \
-	&& chown -R musikcube:musikcube /home/musikcube
+		musikcube
+
+# Copy Caddy build
+COPY --from=build-caddy --chown=root:root /usr/local/bin/caddy /usr/local/bin/caddy
+
+# Copy musikcube build
+COPY --from=build-musikcube --chown=root:root /usr/local/bin/musikcube /usr/local/bin/musikcube
+COPY --from=build-musikcube --chown=root:root /usr/local/bin/musikcubed /usr/local/bin/musikcubed
+COPY --from=build-musikcube --chown=root:root /usr/local/share/musikcube/ /usr/local/share/musikcube/
+
+# Copy PulseAudio client configuration
+COPY --chown=root:root config/pulse-client.conf /etc/pulse/client.conf
+
+# Copy Caddy configuration
+COPY --chown=musikcube:musikcube config/caddy/ /home/musikcube/.caddy/
+
+# Copy musikcube configuration
+COPY --chown=musikcube:musikcube config/musikcube/ /home/musikcube/.musikcube/
+COPY --from=build-musikcube --chown=musikcube:musikcube /tmp/musik.db /home/musikcube/.musikcube/1/musik.db
+
+# Copy scripts
+COPY --chown=root:root scripts/docker-foreground-cmd /usr/local/bin/docker-foreground-cmd
+
+# Setup locale
+RUN locale-gen en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
+
+# Give Caddy permission to bind to port 80 and 443
+RUN setcap cap_net_bind_service=+ep /usr/local/bin/caddy
 
 ENV USE_MUSIKCUBE_CLIENT=0
 ENV MUSIKCUBE_SERVER_PASSWORD=musikcube
 ENV MUSIKCUBE_OUTPUT_DRIVER=Null
 
-VOLUME /music
-VOLUME /home/musikcube/.caddy
-VOLUME /home/musikcube/.musikcube
+VOLUME /music/
+VOLUME /home/musikcube/.caddy/
+VOLUME /home/musikcube/.musikcube/
+WORKDIR /home/musikcube/
 
-WORKDIR /home/musikcube
-
-EXPOSE 7905 7906
+EXPOSE 7905/tcp 7906/tcp
 
 USER musikcube:musikcube
 CMD ["docker-foreground-cmd"]
