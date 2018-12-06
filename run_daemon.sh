@@ -3,8 +3,11 @@
 set -eu
 export LC_ALL=C
 
-DOCKER_IMAGE=hectormolinero/musikcube:latest
-DOCKER_CONTAINER=musikcube
+DOCKER_IMAGE_NAMESPACE=hectormolinero
+DOCKER_IMAGE_NAME=musikcube
+DOCKER_IMAGE_VERSION=latest
+DOCKER_IMAGE=${DOCKER_IMAGE_NAMESPACE}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VERSION}
+DOCKER_CONTAINER=${DOCKER_IMAGE_NAME}
 DOCKER_CADDY_VOLUME="${DOCKER_CONTAINER}"-caddy-data
 DOCKER_APP_VOLUME="${DOCKER_CONTAINER}"-app-data
 
@@ -28,16 +31,15 @@ if containerExists "${DOCKER_CONTAINER}"; then
 fi
 
 if [ -d "${HOME}/Music" ]; then
-	HOST_MUSIC_FOLDER="${HOME}/Music"
-	CONTAINER_MUSIC_FOLDER='/music'
+	MUSIC_FOLDER="${HOME}/Music"
 fi
 
 printf -- '%s\n' "Creating \"${DOCKER_CONTAINER}\" container..."
-exec docker run --detach \
+docker run --detach \
 	--name "${DOCKER_CONTAINER}" \
 	--hostname "${DOCKER_CONTAINER}" \
 	--restart on-failure:3 \
-	--log-opt max-size=100m \
+	--log-opt max-size=32m \
 	--publish '7905:7905/tcp' \
 	--publish '7906:7906/tcp' \
 	--mount type=volume,src="${DOCKER_CADDY_VOLUME}",dst='/home/musikcube/.caddy' \
@@ -51,7 +53,10 @@ exec docker run --detach \
 	${CLOUDFLARE_API_KEY:+ \
 		--env CLOUDFLARE_API_KEY="${CLOUDFLARE_API_KEY}" \
 	} \
-	${HOST_MUSIC_FOLDER:+ \
-		--mount type=bind,src="${HOST_MUSIC_FOLDER}",dst="${CONTAINER_MUSIC_FOLDER}",ro \
+	${MUSIC_FOLDER:+ \
+		--mount type=bind,src="${MUSIC_FOLDER}",dst='/music',ro \
 	} \
 	"${DOCKER_IMAGE}" "$@"
+
+printf -- '%s\n\n' 'Done!'
+exec docker logs -f "${DOCKER_CONTAINER}"

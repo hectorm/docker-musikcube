@@ -1,33 +1,57 @@
+m4_changequote([[, ]])
+
+m4_ifdef([[CROSS_QEMU]], [[
+##################################################
+## "qemu-user-static" stage
+##################################################
+
+FROM ubuntu:18.04 AS qemu-user-static
+RUN DEBIAN_FRONTEND=noninteractive \
+	&& apt-get update \
+	&& apt-get install -y --no-install-recommends qemu-user-static
+]])
+
+##################################################
+## "build-caddy" stage
+##################################################
+
 FROM golang:1-stretch AS build-caddy
 
-ARG CADDY_BRANCH=v0.11.1
+# Install system packages
+RUN DEBIAN_FRONTEND=noninteractive \
+	&& apt-get update \
+	&& apt-get install -y --no-install-recommends \
+		file
 
 # Copy Caddy patches
 COPY patches/caddy-* /tmp/patches/
 
 # Build Caddy
-RUN go get -u github.com/mholt/caddy \
+ARG CADDY_TREEISH=v0.11.1
+RUN go get -d github.com/mholt/caddy \
 	&& go get -u github.com/caddyserver/builds \
 	&& go get -u github.com/caddyserver/dnsproviders/cloudflare \
 	&& cd "${GOPATH}/src/github.com/mholt/caddy/caddy" \
-	&& git checkout "${CADDY_BRANCH}" \
+	&& git checkout "${CADDY_TREEISH}"
+RUN cd "${GOPATH}/src/github.com/mholt/caddy/caddy" \
 	&& git apply -v /tmp/patches/caddy-*.patch \
-	&& go run build.go \
-	&& ./caddy --version \
-	&& ./caddy --plugins \
+	&& export GOOS=m4_ifdef([[CROSS_GOOS]], [[CROSS_GOOS]]) \
+	&& export GOARCH=m4_ifdef([[CROSS_GOARCH]], [[CROSS_GOARCH]]) \
+	&& export GOARM=m4_ifdef([[CROSS_GOARM]], [[CROSS_GOARM]]) \
+	&& go build \
+	&& file ./caddy \
 	&& mv ./caddy /usr/local/bin/caddy
 
-FROM ubuntu:18.04 AS build-musikcube
+##################################################
+## "build-musikcube" stage
+##################################################
 
-ARG MUSIKCUBE_BRANCH=0.51.0
-ARG MUSIKCUBE_REMOTE=https://github.com/clangen/musikcube.git
+m4_ifdef([[CROSS_ARCH]], [[FROM CROSS_ARCH/ubuntu:18.04]], [[FROM ubuntu:18.04]]) AS build-musikcube
+m4_ifdef([[CROSS_QEMU]], [[COPY --from=qemu-user-static CROSS_QEMU CROSS_QEMU]])
 
-# Copy musikcube patches
-#COPY patches/musikcube-* /tmp/patches/
-
-# Install musikcube build dependencies
-ARG DEBIAN_FRONTEND=noninteractive
-RUN apt-get update \
+# Install system packages
+RUN DEBIAN_FRONTEND=noninteractive \
+	&& apt-get update \
 	&& apt-get install -y --no-install-recommends \
 		build-essential \
 		ca-certificates \
@@ -56,24 +80,37 @@ RUN apt-get update \
 		sqlite3
 
 # Build musikcube
-RUN mkdir /tmp/musikcube \
-	&& cd /tmp/musikcube \
-	&& git clone "${MUSIKCUBE_REMOTE}" --recursive . \
-	&& git checkout "${MUSIKCUBE_BRANCH}" \
+ARG MUSIKCUBE_TREEISH=0.51.0
+ARG MUSIKCUBE_REMOTE=https://github.com/clangen/musikcube.git
+RUN mkdir -p /tmp/musikcube/ && cd /tmp/musikcube/ \
+	&& git clone --recursive "${MUSIKCUBE_REMOTE}" ./ \
+	&& git checkout "${MUSIKCUBE_TREEISH}"
+RUN cd /tmp/musikcube/ \
 	&& cmake . \
 	&& make -j$(nproc) \
 	&& cmake . \
-	&& make install
+	&& make install \
+	&& /usr/local/bin/musikcube --version
 
 # Create music library db
 COPY config/musikcube/1/musik.db.sql /tmp/musik.db.sql
 RUN sqlite3 /tmp/musik.db < /tmp/musik.db.sql
 
-FROM ubuntu:18.04
+##################################################
+## "musikcube" stage
+##################################################
 
-# Install runtime dependencies
-ARG DEBIAN_FRONTEND=noninteractive
-RUN apt-get update \
+m4_ifdef([[CROSS_ARCH]], [[FROM CROSS_ARCH/ubuntu:18.04]], [[FROM ubuntu:18.04]]) AS musikcube
+m4_ifdef([[CROSS_QEMU]], [[COPY --from=qemu-user-static CROSS_QEMU CROSS_QEMU]])
+
+# Environment
+ENV USE_MUSIKCUBE_CLIENT=0
+ENV MUSIKCUBE_SERVER_PASSWORD=musikcube
+ENV MUSIKCUBE_OUTPUT_DRIVER=Null
+
+# Install system packages
+RUN DEBIAN_FRONTEND=noninteractive \
+	&& apt-get update \
 	&& apt-get install -y --no-install-recommends \
 		ca-certificates \
 		jq \
@@ -98,20 +135,22 @@ RUN apt-get update \
 		libvorbis0a \
 		libvorbisfile3 \
 		locales \
+		nano \
 		pulseaudio \
 	&& rm -rf /var/lib/apt/lists/*
 
-# Create musikcube group, user and folders
+# Create users and groups
 ARG MUSIKCUBE_USER_UID=1000
 ARG MUSIKCUBE_USER_GID=1000
 RUN groupadd \
 		--gid "${MUSIKCUBE_USER_GID}" \
-		musikcube \
-	&& useradd \
+		musikcube
+RUN useradd \
 		--uid "${MUSIKCUBE_USER_UID}" \
-		--gid musikcube \
-		--groups audio \
-		--home-dir /home/musikcube \
+		--gid "${MUSIKCUBE_USER_GID}" \
+		--shell="$(which bash)" \
+		--home-dir /home/musikcube/ \
+		--create-home \
 		musikcube
 
 # Copy Caddy build
@@ -140,19 +179,23 @@ RUN locale-gen en_US.UTF-8
 ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 
-# Give Caddy permission to bind to port 80 and 443
+# Add capabilities to the caddy binary
 RUN setcap cap_net_bind_service=+ep /usr/local/bin/caddy
 
-ENV USE_MUSIKCUBE_CLIENT=0
-ENV MUSIKCUBE_SERVER_PASSWORD=musikcube
-ENV MUSIKCUBE_OUTPUT_DRIVER=Null
+# Drop root privileges
+USER musikcube:musikcube
 
-VOLUME /music/
-VOLUME /home/musikcube/.caddy/
-VOLUME /home/musikcube/.musikcube/
+# Expose ports
+## WebSocket server (metadata)
+EXPOSE 7905/tcp
+## HTTP server (audio)
+EXPOSE 7906/tcp
+
+# Don't declare volumes, let the user decide
+#VOLUME /music/
+#VOLUME /home/musikcube/.caddy/
+#VOLUME /home/musikcube/.musikcube/
+
 WORKDIR /home/musikcube/
 
-EXPOSE 7905/tcp 7906/tcp
-
-USER musikcube:musikcube
-CMD ["docker-foreground-cmd"]
+CMD ["/usr/local/bin/docker-foreground-cmd"]

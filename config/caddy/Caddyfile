@@ -1,4 +1,4 @@
-# web socket (metadata) server
+# WebSocket server (metadata)
 # https://example.com:7905 {
 https://*:7905 {
 	tls self_signed
@@ -11,7 +11,7 @@ https://*:7905 {
 	log / stdout
 }
 
-# audio (file) server
+# HTTP server (audio)
 # https://example.com:7906 {
 https://*:7906 {
 	tls self_signed
