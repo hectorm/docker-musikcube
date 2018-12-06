@@ -1,6 +1,6 @@
 FROM golang:1-stretch AS build-caddy
 
-ARG CADDY_BRANCH=v0.11.0
+ARG CADDY_BRANCH=v0.11.1
 
 # Copy Caddy patches
 COPY patches/caddy-* /tmp/patches/
