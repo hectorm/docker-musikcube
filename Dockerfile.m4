@@ -63,6 +63,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
 		clang \
 		cmake \
 		curl \
+		file \
 		git \
 		libasound2-dev \
 		libboost-atomic1.65-dev \
@@ -93,9 +94,9 @@ RUN mkdir -p /tmp/musikcube/ && cd /tmp/musikcube/ \
 RUN cd /tmp/musikcube/ \
 	&& cmake . \
 	&& make -j$(nproc) \
-	&& cmake . \
 	&& make install \
-	&& /usr/local/bin/musikcube --version
+	&& file /usr/local/share/musikcube/musikcube \
+	&& file /usr/local/share/musikcube/musikcubed
 
 # Create music library db
 COPY config/musikcube/1/musik.db.sql /tmp/musik.db.sql
