@@ -28,11 +28,16 @@ COPY patches/caddy-* /tmp/patches/
 
 # Build Caddy
 ARG CADDY_TREEISH=v0.11.1
-RUN go get -d github.com/mholt/caddy \
-	&& go get -u github.com/caddyserver/builds \
-	&& go get -u github.com/caddyserver/dnsproviders/cloudflare \
+RUN go get -v -d github.com/mholt/caddy \
 	&& cd "${GOPATH}/src/github.com/mholt/caddy/caddy" \
 	&& git checkout "${CADDY_TREEISH}"
+RUN go get -v -d github.com/caddyserver/builds
+RUN go get -v -d github.com/xenolf/lego/providers/dns/cloudflare \
+	&& cd "${GOPATH}/src/github.com/xenolf/lego/providers/dns/cloudflare" \
+	&& git checkout '4e842a5eb6dcb9520e03db70cd5896f1df14b72a'
+RUN go get -v -d github.com/caddyserver/dnsproviders/cloudflare \
+	&& cd "${GOPATH}/src/github.com/caddyserver/dnsproviders/cloudflare" \
+	&& git checkout '2ee19d79544a20e4653941edcd6ab1873add0c81'
 RUN cd "${GOPATH}/src/github.com/mholt/caddy/caddy" \
 	&& git apply -v /tmp/patches/caddy-*.patch \
 	&& export GOOS=m4_ifdef([[CROSS_GOOS]], [[CROSS_GOOS]]) \
