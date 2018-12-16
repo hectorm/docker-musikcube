@@ -34,18 +34,18 @@ RUN go get -v -d github.com/mholt/caddy \
 RUN go get -v -d github.com/caddyserver/builds
 RUN go get -v -d github.com/xenolf/lego/providers/dns/cloudflare \
 	&& cd "${GOPATH}/src/github.com/xenolf/lego/providers/dns/cloudflare" \
-	&& git checkout '4e842a5eb6dcb9520e03db70cd5896f1df14b72a'
+	&& git checkout 'b05b54d1f69a31ceed92e2995243c5b17821c9e4'
 RUN go get -v -d github.com/caddyserver/dnsproviders/cloudflare \
 	&& cd "${GOPATH}/src/github.com/caddyserver/dnsproviders/cloudflare" \
-	&& git checkout '2ee19d79544a20e4653941edcd6ab1873add0c81'
+	&& git checkout '73747960ab3d77b4b4413d3d12433e04cc2663bf'
 RUN cd "${GOPATH}/src/github.com/mholt/caddy/caddy" \
 	&& git apply -v /tmp/patches/caddy-*.patch \
 	&& export GOOS=m4_ifdef([[CROSS_GOOS]], [[CROSS_GOOS]]) \
 	&& export GOARCH=m4_ifdef([[CROSS_GOARCH]], [[CROSS_GOARCH]]) \
 	&& export GOARM=m4_ifdef([[CROSS_GOARM]], [[CROSS_GOARM]]) \
-	&& go build \
+	&& go build -o ./caddy ./main.go \
 	&& file ./caddy \
-	&& mv ./caddy /usr/local/bin/caddy
+	&& mv ./caddy /usr/bin/caddy
 
 ##################################################
 ## "build-musikcube" stage
@@ -160,7 +160,7 @@ RUN useradd \
 		musikcube
 
 # Copy Caddy build
-COPY --from=build-caddy --chown=root:root /usr/local/bin/caddy /usr/local/bin/caddy
+COPY --from=build-caddy --chown=root:root /usr/bin/caddy /usr/bin/caddy
 
 # Copy musikcube build
 COPY --from=build-musikcube --chown=root:root /usr/local/bin/musikcube /usr/local/bin/musikcube
@@ -186,7 +186,7 @@ ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 
 # Add capabilities to the caddy binary
-RUN setcap cap_net_bind_service=+ep /usr/local/bin/caddy
+RUN setcap cap_net_bind_service=+ep /usr/bin/caddy
 
 # Drop root privileges
 USER musikcube:musikcube
