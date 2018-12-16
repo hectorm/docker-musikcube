@@ -92,11 +92,11 @@ RUN mkdir -p /tmp/musikcube/ && cd /tmp/musikcube/ \
 	&& git clone --recursive "${MUSIKCUBE_REMOTE}" ./ \
 	&& git checkout "${MUSIKCUBE_TREEISH}"
 RUN cd /tmp/musikcube/ \
-	&& cmake . \
+	&& cmake . -DCMAKE_INSTALL_PREFIX=/usr \
 	&& make -j$(nproc) \
 	&& make install \
-	&& file /usr/local/share/musikcube/musikcube \
-	&& file /usr/local/share/musikcube/musikcubed
+	&& file /usr/share/musikcube/musikcube \
+	&& file /usr/share/musikcube/musikcubed
 
 # Create music library db
 COPY config/musikcube/1/musik.db.sql /tmp/musik.db.sql
@@ -163,9 +163,9 @@ RUN useradd \
 COPY --from=build-caddy --chown=root:root /usr/bin/caddy /usr/bin/caddy
 
 # Copy musikcube build
-COPY --from=build-musikcube --chown=root:root /usr/local/bin/musikcube /usr/local/bin/musikcube
-COPY --from=build-musikcube --chown=root:root /usr/local/bin/musikcubed /usr/local/bin/musikcubed
-COPY --from=build-musikcube --chown=root:root /usr/local/share/musikcube/ /usr/local/share/musikcube/
+COPY --from=build-musikcube --chown=root:root /usr/bin/musikcube /usr/bin/musikcube
+COPY --from=build-musikcube --chown=root:root /usr/bin/musikcubed /usr/bin/musikcubed
+COPY --from=build-musikcube --chown=root:root /usr/share/musikcube/ /usr/share/musikcube/
 
 # Copy PulseAudio client configuration
 COPY --chown=root:root config/pulse-client.conf /etc/pulse/client.conf
