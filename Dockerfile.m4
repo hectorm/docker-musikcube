@@ -23,8 +23,8 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 	&& apt-get install -y --no-install-recommends \
 		file
 
-# Copy Caddy patches
-COPY patches/caddy-* /tmp/patches/
+# Copy patches
+COPY patches/ /tmp/patches/
 
 # Build Caddy
 ARG CADDY_TREEISH=v0.11.1
@@ -39,13 +39,13 @@ RUN go get -v -d github.com/caddyserver/dnsproviders/cloudflare \
 	&& cd "${GOPATH}/src/github.com/caddyserver/dnsproviders/cloudflare" \
 	&& git checkout '73747960ab3d77b4b4413d3d12433e04cc2663bf'
 RUN cd "${GOPATH}/src/github.com/mholt/caddy/caddy" \
-	&& git apply -v /tmp/patches/caddy-*.patch \
+	&& for f in /tmp/patches/caddy-*.patch; do [ -e "$f" ] || continue; git apply -v "$f"; done \
 	&& export GOOS=m4_ifdef([[CROSS_GOOS]], [[CROSS_GOOS]]) \
 	&& export GOARCH=m4_ifdef([[CROSS_GOARCH]], [[CROSS_GOARCH]]) \
 	&& export GOARM=m4_ifdef([[CROSS_GOARM]], [[CROSS_GOARM]]) \
 	&& go build -o ./caddy ./main.go \
-	&& file ./caddy \
-	&& mv ./caddy /usr/bin/caddy
+	&& mv ./caddy /usr/bin/caddy \
+	&& file /usr/bin/caddy
 
 ##################################################
 ## "build-musikcube" stage
@@ -85,6 +85,9 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		libvorbis-dev \
 		sqlite3
 
+# Copy patches
+COPY patches/ /tmp/patches/
+
 # Build musikcube
 ARG MUSIKCUBE_TREEISH=0.51.0
 ARG MUSIKCUBE_REMOTE=https://github.com/clangen/musikcube.git
@@ -92,8 +95,9 @@ RUN mkdir -p /tmp/musikcube/ && cd /tmp/musikcube/ \
 	&& git clone --recursive "${MUSIKCUBE_REMOTE}" ./ \
 	&& git checkout "${MUSIKCUBE_TREEISH}"
 RUN cd /tmp/musikcube/ \
+	&& for f in /tmp/patches/musikcube-*.patch; do [ -e "$f" ] || continue; git apply -v "$f"; done \
 	&& cmake . -DCMAKE_INSTALL_PREFIX=/usr \
-	&& make -j$(nproc) \
+	&& make -j"$(nproc)" \
 	&& make install \
 	&& file /usr/share/musikcube/musikcube \
 	&& file /usr/share/musikcube/musikcubed
