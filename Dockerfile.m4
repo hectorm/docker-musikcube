@@ -6,7 +6,7 @@ m4_ifdef([[CROSS_QEMU]], [[
 ##################################################
 
 FROM ubuntu:18.04 AS qemu-user-static
-RUN DEBIAN_FRONTEND=noninteractive \
+RUN export DEBIAN_FRONTEND=noninteractive \
 	&& apt-get update \
 	&& apt-get install -y --no-install-recommends qemu-user-static
 ]])
@@ -18,7 +18,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
 FROM golang:1-stretch AS build-caddy
 
 # Install system packages
-RUN DEBIAN_FRONTEND=noninteractive \
+RUN export DEBIAN_FRONTEND=noninteractive \
 	&& apt-get update \
 	&& apt-get install -y --no-install-recommends \
 		file
@@ -55,7 +55,7 @@ m4_ifdef([[CROSS_ARCH]], [[FROM CROSS_ARCH/ubuntu:18.04]], [[FROM ubuntu:18.04]]
 m4_ifdef([[CROSS_QEMU]], [[COPY --from=qemu-user-static CROSS_QEMU CROSS_QEMU]])
 
 # Install system packages
-RUN DEBIAN_FRONTEND=noninteractive \
+RUN export DEBIAN_FRONTEND=noninteractive \
 	&& apt-get update \
 	&& apt-get install -y --no-install-recommends \
 		build-essential \
@@ -115,7 +115,7 @@ ENV MUSIKCUBE_SERVER_PASSWORD=musikcube
 ENV MUSIKCUBE_OUTPUT_DRIVER=Null
 
 # Install system packages
-RUN DEBIAN_FRONTEND=noninteractive \
+RUN export DEBIAN_FRONTEND=noninteractive \
 	&& apt-get update \
 	&& apt-get install -y --no-install-recommends \
 		ca-certificates \
