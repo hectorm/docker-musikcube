@@ -45,8 +45,6 @@ exec docker run --tty --interactive --rm \
 	--log-driver none \
 	--publish '7905:7905/tcp' \
 	--publish '7906:7906/tcp' \
-	--env TERM='xterm-256color' \
-	--env USE_MUSIKCUBE_CLIENT=1 \
 	--env MUSIKCUBE_OUTPUT_DRIVER='AlsaOut' \
 	--mount type=volume,src="${DOCKER_CADDY_VOLUME}",dst='/home/musikcube/.caddy' \
 	--mount type=volume,src="${DOCKER_APP_VOLUME}",dst='/home/musikcube/.musikcube' \

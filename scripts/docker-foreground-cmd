@@ -2,41 +2,40 @@
 
 set -eu
 
+setOption() {
+	file=$1; key=$2; value=$3; shift 3
+	[ ! -f "${file}" ] && printf '{}' > "${file}"
+	content=$(jq --arg k "${key}" --arg v "${value}" '.+{($k): $v}' "${file}")
+	printf -- '%s\n' "${content}" > "${file}"
+}
+
 # Set playback options
 PLAYBACK_FILE="${HOME}/.musikcube/playback.json"
-[ ! -f "${PLAYBACK_FILE}" ] && printf '{}' > "${PLAYBACK_FILE}"
-PLAYBACK_FILE_JSON=$(jq \
-	--arg OutputPlugin "${MUSIKCUBE_OUTPUT_DRIVER}" '.+{OutputPlugin: $OutputPlugin}' \
-	"${PLAYBACK_FILE}"
-)
-printf -- '%s\n' "${PLAYBACK_FILE_JSON}" > "${PLAYBACK_FILE}"
+setOption "${PLAYBACK_FILE}" 'OutputPlugin' "${MUSIKCUBE_OUTPUT_DRIVER}"
 
 # Set musikcubeserver options
 PLUGIN_MUSIKCUBESERVER_FILE="${HOME}/.musikcube/plugin_musikcubeserver(wss,http).json"
-[ ! -f "${PLUGIN_MUSIKCUBESERVER_FILE}" ] && printf '{}' > "${PLUGIN_MUSIKCUBESERVER_FILE}"
-PLUGIN_MUSIKCUBESERVER_JSON=$(jq \
-	--arg password "${MUSIKCUBE_SERVER_PASSWORD}" '.+{password: $password}' \
-	"${PLUGIN_MUSIKCUBESERVER_FILE}"
-)
-printf -- '%s\n' "${PLUGIN_MUSIKCUBESERVER_JSON}" > "${PLUGIN_MUSIKCUBESERVER_FILE}"
+setOption "${PLUGIN_MUSIKCUBESERVER_FILE}" 'password' "${MUSIKCUBE_SERVER_PASSWORD}"
 
 # Initialize
-MUSIKCUBE_CADDYFILE="${HOME}/.caddy/Caddyfile"
-if [ "${USE_MUSIKCUBE_CLIENT}" -eq 1 ]; then
-	caddy --agree --conf "${MUSIKCUBE_CADDYFILE}" &
+if [ -t 1 ]; then
+	export TERM=xterm-256color
+	caddy --agree --conf "${HOME}/.caddy/Caddyfile" &
 	exec musikcube
 else
-	caddy --agree --conf "${MUSIKCUBE_CADDYFILE}" & CADDY_PID=$!
+	CADDY_PIDFILE='/tmp/caddy.lock'
+	MUSIKCUBED_PIDFILE='/tmp/musikcubed.lock'
+	rm -f "${CADDY_PIDFILE}" "${MUSIKCUBED_PIDFILE}"
 
-	rm -f -- '/tmp/musikcubed.lock'
-	musikcubed --start && MUSIKCUBE_PID=$(cat '/tmp/musikcubed.lock')
+	caddy --agree --conf "${HOME}/.caddy/Caddyfile" --pidfile "${CADDY_PIDFILE}" &
+	musikcubed --start
 
-	while sleep 30; do
-		if [ ! -e "/proc/${CADDY_PID}" ]; then
+	while sleep 10; do
+		if [ ! -e "${CADDY_PIDFILE}" ] || [ ! -e "/proc/$(cat "${CADDY_PIDFILE}")" ]; then
 			printf -- '%s\n' 'Caddy is not running, exiting...'
 			exit 1
-		elif [ ! -e "/proc/${MUSIKCUBE_PID}" ]; then
-			printf -- '%s\n' 'Musikcube is not running, exiting...'
+		elif [ ! -e "${MUSIKCUBED_PIDFILE}" ] || [ ! -e "/proc/$(cat "${MUSIKCUBED_PIDFILE}")" ]; then
+			printf -- '%s\n' 'musikcubed is not running, exiting...'
 			exit 1
 		fi
 	done

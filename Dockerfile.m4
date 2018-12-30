@@ -115,7 +115,6 @@ m4_ifdef([[CROSS_ARCH]], [[FROM CROSS_ARCH/ubuntu:18.04]], [[FROM ubuntu:18.04]]
 m4_ifdef([[CROSS_QEMU]], [[COPY --from=qemu-user-static CROSS_QEMU CROSS_QEMU]])
 
 # Environment
-ENV USE_MUSIKCUBE_CLIENT=0
 ENV MUSIKCUBE_SERVER_PASSWORD=musikcube
 ENV MUSIKCUBE_OUTPUT_DRIVER=Null
 
@@ -151,6 +150,11 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		pulseaudio \
 	&& rm -rf /var/lib/apt/lists/*
 
+# Setup locale
+RUN locale-gen en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
+
 # Create users and groups
 ARG MUSIKCUBE_USER_UID=1000
 ARG MUSIKCUBE_USER_GID=1000
@@ -185,11 +189,6 @@ COPY --from=build-musikcube --chown=musikcube:musikcube /tmp/musik.db /home/musi
 
 # Copy scripts
 COPY --chown=root:root scripts/docker-foreground-cmd /usr/local/bin/docker-foreground-cmd
-
-# Setup locale
-RUN locale-gen en_US.UTF-8
-ENV LANG=en_US.UTF-8
-ENV LC_ALL=en_US.UTF-8
 
 # Add capabilities to the caddy binary
 RUN setcap cap_net_bind_service=+ep /usr/bin/caddy
