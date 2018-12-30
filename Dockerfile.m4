@@ -66,6 +66,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		file \
 		git \
 		libasound2-dev \
+		libavformat-dev \
 		libboost-atomic1.65-dev \
 		libboost-chrono1.65-dev \
 		libboost-date-time1.65-dev \
@@ -74,14 +75,14 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		libboost-thread1.65-dev \
 		libcurl4-openssl-dev \
 		libev-dev \
-		libfaad-dev \
-		libflac-dev \
 		libmicrohttpd-dev \
 		libmp3lame-dev \
 		libncursesw5-dev \
 		libogg-dev \
 		libpulse-dev \
 		libssl-dev \
+		libswresample-dev \
+		libtag1-dev \
 		libvorbis-dev \
 		sqlite3
 
@@ -89,7 +90,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 COPY patches/ /tmp/patches/
 
 # Build musikcube
-ARG MUSIKCUBE_TREEISH=0.51.0
+ARG MUSIKCUBE_TREEISH=0.60.0
 ARG MUSIKCUBE_REMOTE=https://github.com/clangen/musikcube.git
 RUN mkdir -p /tmp/musikcube/ && cd /tmp/musikcube/ \
 	&& git clone --recursive "${MUSIKCUBE_REMOTE}" ./ \
@@ -125,6 +126,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		ca-certificates \
 		jq \
 		libasound2 \
+		libavformat57 \
 		libboost-atomic1.65.1 \
 		libboost-chrono1.65.1 \
 		libboost-date-time1.65.1 \
@@ -134,14 +136,14 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		libcap2-bin \
 		libcurl4 \
 		libev4 \
-		libfaad2 \
-		libflac8 \
 		libmicrohttpd12 \
 		libmp3lame0 \
 		libncursesw5 \
 		libogg0 \
 		libpulse0 \
 		libssl1.1 \
+		libswresample2 \
+		libtag1v5 \
 		libvorbis0a \
 		libvorbisfile3 \
 		locales \
