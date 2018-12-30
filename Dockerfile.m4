@@ -34,7 +34,7 @@ RUN go get -v -d github.com/mholt/caddy \
 RUN go get -v -d github.com/caddyserver/builds
 RUN go get -v -d github.com/xenolf/lego/providers/dns/cloudflare \
 	&& cd "${GOPATH}/src/github.com/xenolf/lego/providers/dns/cloudflare" \
-	&& git checkout 'b05b54d1f69a31ceed92e2995243c5b17821c9e4'
+	&& git checkout '8d8ec2c92c06dae7f89ac9569dc0e7f940fe713c'
 RUN go get -v -d github.com/caddyserver/dnsproviders/cloudflare \
 	&& cd "${GOPATH}/src/github.com/caddyserver/dnsproviders/cloudflare" \
 	&& git checkout '73747960ab3d77b4b4413d3d12433e04cc2663bf'
