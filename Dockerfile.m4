@@ -67,6 +67,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		git \
 		libasound2-dev \
 		libavformat-dev \
+		libavutil-dev \
 		libboost-atomic1.65-dev \
 		libboost-chrono1.65-dev \
 		libboost-date-time1.65-dev \
@@ -90,7 +91,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 COPY patches/ /tmp/patches/
 
 # Build musikcube
-ARG MUSIKCUBE_TREEISH=0.60.1
+ARG MUSIKCUBE_TREEISH=0.61.0
 ARG MUSIKCUBE_REMOTE=https://github.com/clangen/musikcube.git
 RUN mkdir -p /tmp/musikcube/ && cd /tmp/musikcube/ \
 	&& git clone --recursive "${MUSIKCUBE_REMOTE}" ./ \
@@ -126,6 +127,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		jq \
 		libasound2 \
 		libavformat57 \
+		libavutil55 \
 		libboost-atomic1.65.1 \
 		libboost-chrono1.65.1 \
 		libboost-date-time1.65.1 \

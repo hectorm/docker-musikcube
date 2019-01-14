@@ -125,8 +125,31 @@ CREATE TABLE `albums` (
 	PRIMARY KEY(`id`)
 );
 
+CREATE INDEX `tracks_filename_index` ON `tracks` (
+	`filename`
+);
+
 CREATE INDEX `tracks_external_id_index` ON `tracks` (
 	`external_id`
+);
+
+CREATE INDEX `tracks_external_id_filetime_index` ON `tracks` (
+	`external_id`,
+	`filetime`
+);
+
+CREATE INDEX `tracks_dirty_index` ON `tracks` (
+	`id`,
+	`filename`,
+	`filesize`,
+	`filetime`
+);
+
+CREATE INDEX `tracks_by_source_index` ON `tracks` (
+	`id`,
+	`external_id`,
+	`filename`,
+	`source_id`
 );
 
 CREATE INDEX `trackmeta_index2` ON `track_meta` (
