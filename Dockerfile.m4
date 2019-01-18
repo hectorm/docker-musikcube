@@ -12,44 +12,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 ]])
 
 ##################################################
-## "build-caddy" stage
-##################################################
-
-FROM golang:1-stretch AS build-caddy
-
-# Install system packages
-RUN export DEBIAN_FRONTEND=noninteractive \
-	&& apt-get update \
-	&& apt-get install -y --no-install-recommends \
-		file
-
-# Copy patches
-COPY patches/ /tmp/patches/
-
-# Build Caddy
-ARG CADDY_TREEISH=v0.11.1
-ARG LEGO_TREEISH=v2.0.1
-ARG DNSPROVIDERS_TREEISH=73747960ab3d77b4b4413d3d12433e04cc2663bf
-RUN go get -v -d github.com/mholt/caddy \
-	&& cd "${GOPATH}/src/github.com/mholt/caddy/caddy" \
-	&& git checkout "${CADDY_TREEISH}"
-RUN go get -v -d github.com/caddyserver/builds
-RUN go get -v -d github.com/xenolf/lego/lego \
-	&& cd "${GOPATH}/src/github.com/xenolf/lego/lego" \
-	&& git checkout "${LEGO_TREEISH}"
-RUN go get -v -d github.com/caddyserver/dnsproviders/... \
-	&& cd "${GOPATH}/src/github.com/caddyserver/dnsproviders" \
-	&& git checkout "${DNSPROVIDERS_TREEISH}"
-RUN cd "${GOPATH}/src/github.com/mholt/caddy/caddy" \
-	&& for f in /tmp/patches/caddy-*.patch; do [ -e "$f" ] || continue; git apply -v "$f"; done \
-	&& export GOOS=m4_ifdef([[CROSS_GOOS]], [[CROSS_GOOS]]) \
-	&& export GOARCH=m4_ifdef([[CROSS_GOARCH]], [[CROSS_GOARCH]]) \
-	&& export GOARM=m4_ifdef([[CROSS_GOARM]], [[CROSS_GOARM]]) \
-	&& go build -o ./caddy ./main.go \
-	&& mv ./caddy /usr/bin/caddy \
-	&& file /usr/bin/caddy
-
-##################################################
 ## "build-musikcube" stage
 ##################################################
 
@@ -89,9 +51,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		libvorbis-dev \
 		sqlite3
 
-# Copy patches
-COPY patches/ /tmp/patches/
-
 # Build musikcube
 ARG MUSIKCUBE_TREEISH=0.61.0
 ARG MUSIKCUBE_REMOTE=https://github.com/clangen/musikcube.git
@@ -99,7 +58,6 @@ RUN mkdir -p /tmp/musikcube/ && cd /tmp/musikcube/ \
 	&& git clone --recursive "${MUSIKCUBE_REMOTE}" ./ \
 	&& git checkout "${MUSIKCUBE_TREEISH}"
 RUN cd /tmp/musikcube/ \
-	&& for f in /tmp/patches/musikcube-*.patch; do [ -e "$f" ] || continue; git apply -v "$f"; done \
 	&& cmake . -DCMAKE_INSTALL_PREFIX=/usr \
 	&& make -j"$(nproc)" \
 	&& make install \
@@ -174,7 +132,10 @@ RUN useradd \
 		musikcube
 
 # Copy Caddy build
-COPY --from=build-caddy --chown=root:root /usr/bin/caddy /usr/bin/caddy
+COPY --from=hectormolinero/caddy:m4_ifdef([[CROSS_ARCH]], [[v1-CROSS_ARCH]], [[v1]]) --chown=root:root /usr/bin/caddy /usr/bin/caddy
+
+# Add capabilities to the Caddy binary
+RUN setcap cap_net_bind_service=+ep /usr/bin/caddy
 
 # Copy musikcube build
 COPY --from=build-musikcube --chown=root:root /usr/bin/musikcube /usr/bin/musikcube
@@ -193,9 +154,6 @@ COPY --from=build-musikcube --chown=musikcube:musikcube /tmp/musik.db /home/musi
 
 # Copy scripts
 COPY --chown=root:root scripts/docker-foreground-cmd /usr/local/bin/docker-foreground-cmd
-
-# Add capabilities to the caddy binary
-RUN setcap cap_net_bind_service=+ep /usr/bin/caddy
 
 # Drop root privileges
 USER musikcube:musikcube
