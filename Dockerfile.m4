@@ -132,7 +132,7 @@ RUN useradd \
 		musikcube
 
 # Copy Caddy build
-COPY --from=hectormolinero/caddy:m4_ifdef([[CROSS_ARCH]], [[v1-CROSS_ARCH]], [[v1]]) --chown=root:root /usr/bin/caddy /usr/bin/caddy
+COPY --from=hectormolinero/caddy:m4_ifdef([[CROSS_ARCH]], [[v2-CROSS_ARCH]], [[v2]]) --chown=root:root /usr/bin/caddy /usr/bin/caddy
 
 # Add capabilities to the Caddy binary
 RUN setcap cap_net_bind_service=+ep /usr/bin/caddy
