@@ -52,7 +52,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		sqlite3
 
 # Build musikcube
-ARG MUSIKCUBE_TREEISH=0.61.0
+ARG MUSIKCUBE_TREEISH=0.62.0
 ARG MUSIKCUBE_REMOTE=https://github.com/clangen/musikcube.git
 RUN mkdir -p /tmp/musikcube/ && cd /tmp/musikcube/ \
 	&& git clone --recursive "${MUSIKCUBE_REMOTE}" ./ \
@@ -110,6 +110,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		locales \
 		nano \
 		pulseaudio \
+		runit \
 	&& rm -rf /var/lib/apt/lists/*
 
 # Setup locale
@@ -131,8 +132,13 @@ RUN useradd \
 		--create-home \
 		musikcube
 
+# Copy Tini build
+m4_define([[TINI_IMAGE_TAG]], m4_ifdef([[CROSS_ARCH]], [[v1-CROSS_ARCH]], [[v1]]))m4_dnl
+COPY --from=hectormolinero/tini:TINI_IMAGE_TAG --chown=root:root /usr/bin/tini /usr/bin/tini
+
 # Copy Caddy build
-COPY --from=hectormolinero/caddy:m4_ifdef([[CROSS_ARCH]], [[v2-CROSS_ARCH]], [[v2]]) --chown=root:root /usr/bin/caddy /usr/bin/caddy
+m4_define([[CADDY_IMAGE_TAG]], m4_ifdef([[CROSS_ARCH]], [[v2-CROSS_ARCH]], [[v2]]))m4_dnl
+COPY --from=hectormolinero/caddy:CADDY_IMAGE_TAG --chown=root:root /usr/bin/caddy /usr/bin/caddy
 
 # Add capabilities to the Caddy binary
 RUN setcap cap_net_bind_service=+ep /usr/bin/caddy
@@ -152,8 +158,11 @@ COPY --chown=musikcube:musikcube config/caddy/ /home/musikcube/.caddy/
 COPY --chown=musikcube:musikcube config/musikcube/ /home/musikcube/.musikcube/
 COPY --from=build-musikcube --chown=musikcube:musikcube /tmp/musik.db /home/musikcube/.musikcube/1/musik.db
 
+# Copy services
+COPY --chown=musikcube:musikcube scripts/service/ /home/musikcube/service/
+
 # Copy scripts
-COPY --chown=root:root scripts/docker-foreground-cmd /usr/local/bin/docker-foreground-cmd
+COPY --chown=root:root scripts/bin/ /usr/local/bin/
 
 # Drop root privileges
 USER musikcube:musikcube
@@ -165,10 +174,13 @@ EXPOSE 7905/tcp
 EXPOSE 7906/tcp
 
 # Don't declare volumes, let the user decide
-#VOLUME /music/
 #VOLUME /home/musikcube/.caddy/
 #VOLUME /home/musikcube/.musikcube/
 
 WORKDIR /home/musikcube/
 
+HEALTHCHECK --start-period=60s --interval=30s --timeout=5s --retries=3 \
+	CMD /usr/local/bin/docker-healthcheck-cmd
+
+ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["/usr/local/bin/docker-foreground-cmd"]

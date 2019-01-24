@@ -5,7 +5,7 @@ https://*:7905 {
 	# tls email@example.com {
 	#	dns cloudflare
 	# }
-	proxy / 127.0.0.1:7903 {
+	proxy / 127.0.0.1:17905 {
 		websocket
 	}
 	log / stdout
@@ -18,7 +18,7 @@ https://*:7906 {
 	# tls email@example.com {
 	#	dns cloudflare
 	# }
-	proxy / 127.0.0.1:7904 {
+	proxy / 127.0.0.1:17906 {
 		transparent
 	}
 	log / stdout

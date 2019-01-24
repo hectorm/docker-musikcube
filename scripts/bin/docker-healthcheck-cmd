@@ -1,0 +1,15 @@
+#!/bin/sh
+
+set -eu
+
+# caddy daemon must be running
+if ! is-sv-status caddy run; then
+	>&2 printf '%s\n' 'caddy daemon is not running'
+	exit 1
+fi
+
+# musikcubed daemon or musikcube client must be running
+if ! is-sv-status musikcubed run && ! pgrep -x musikcube >/dev/null 2>&1; then
+	>&2 printf '%s\n' 'Neither musikcubed daemon nor musikcube client are running'
+	exit 1
+fi
