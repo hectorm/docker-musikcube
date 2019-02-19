@@ -91,8 +91,6 @@ $(IMAGE_ARM32V7_DOCKERFILE): $(DOCKERFILE_TEMPLATE)
 	'$(DOCKER)' pull '$(IMAGE_VERSION_TAG)-arm32v7' || true
 	'$(DOCKER)' build --cache-from '$(IMAGE_VERSION_TAG)-arm32v7' \
 		--tag '$(IMAGE_VERSION_TAG)-arm32v7' \
-		--build-arg KNOT_RESOLVER_SKIP_INSTALLATION_CHECK=true \
-		--build-arg KNOT_RESOLVER_SKIP_INTEGRATION_CHECK=true \
 		--file '$@' ./
 
 .PHONY: build-arm64v8-image
@@ -109,8 +107,6 @@ $(IMAGE_ARM64V8_DOCKERFILE): $(DOCKERFILE_TEMPLATE)
 	'$(DOCKER)' pull '$(IMAGE_VERSION_TAG)-arm64v8' || true
 	'$(DOCKER)' build --cache-from '$(IMAGE_VERSION_TAG)-arm64v8' \
 		--tag '$(IMAGE_VERSION_TAG)-arm64v8' \
-		--build-arg KNOT_RESOLVER_SKIP_INSTALLATION_CHECK=true \
-		--build-arg KNOT_RESOLVER_SKIP_INTEGRATION_CHECK=true \
 		--file '$@' ./
 
 ##################################################
