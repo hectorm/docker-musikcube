@@ -137,7 +137,7 @@ m4_define([[TINI_IMAGE_TAG]], m4_ifdef([[CROSS_ARCH]], [[v3-CROSS_ARCH]], [[v3]]
 COPY --from=hectormolinero/tini:TINI_IMAGE_TAG --chown=root:root /usr/bin/tini /usr/bin/tini
 
 # Copy Caddy build
-m4_define([[CADDY_IMAGE_TAG]], m4_ifdef([[CROSS_ARCH]], [[v10-CROSS_ARCH]], [[v10]]))m4_dnl
+m4_define([[CADDY_IMAGE_TAG]], m4_ifdef([[CROSS_ARCH]], [[v11-CROSS_ARCH]], [[v11]]))m4_dnl
 COPY --from=hectormolinero/caddy:CADDY_IMAGE_TAG --chown=root:root /usr/bin/caddy /usr/bin/caddy
 
 # Add capabilities to the Caddy binary
