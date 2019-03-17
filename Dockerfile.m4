@@ -55,8 +55,9 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 ARG MUSIKCUBE_TREEISH=0.63.0
 ARG MUSIKCUBE_REMOTE=https://github.com/clangen/musikcube.git
 RUN mkdir -p /tmp/musikcube/ && cd /tmp/musikcube/ \
-	&& git clone --recursive "${MUSIKCUBE_REMOTE}" ./ \
-	&& git checkout "${MUSIKCUBE_TREEISH}"
+	&& git clone "${MUSIKCUBE_REMOTE}" ./ \
+	&& git checkout "${MUSIKCUBE_TREEISH}" \
+	&& git submodule update --init --recursive
 RUN cd /tmp/musikcube/ \
 	&& cmake . -DCMAKE_INSTALL_PREFIX=/usr \
 	&& make -j"$(nproc)" \
