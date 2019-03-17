@@ -134,7 +134,7 @@ RUN useradd \
 		musikcube
 
 # Copy Tini build
-m4_define([[TINI_IMAGE_TAG]], m4_ifdef([[CROSS_ARCH]], [[v3-CROSS_ARCH]], [[v3]]))m4_dnl
+m4_define([[TINI_IMAGE_TAG]], m4_ifdef([[CROSS_ARCH]], [[v4-CROSS_ARCH]], [[v4]]))m4_dnl
 COPY --from=hectormolinero/tini:TINI_IMAGE_TAG --chown=root:root /usr/bin/tini /usr/bin/tini
 
 # Copy Caddy build
