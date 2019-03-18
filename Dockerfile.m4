@@ -52,7 +52,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		sqlite3
 
 # Build musikcube
-ARG MUSIKCUBE_TREEISH=0.63.0
+ARG MUSIKCUBE_TREEISH=0.64.0
 ARG MUSIKCUBE_REMOTE=https://github.com/clangen/musikcube.git
 RUN mkdir -p /tmp/musikcube/ && cd /tmp/musikcube/ \
 	&& git clone "${MUSIKCUBE_REMOTE}" ./ \
@@ -133,6 +133,12 @@ RUN useradd \
 		--create-home \
 		musikcube
 
+# Create XDG_CONFIG_HOME subdirectories
+RUN cd /home/musikcube/ \
+	&& mkdir -p ./.config/caddy/ \
+	&& mkdir -p ./.config/musikcube/ \
+	&& chown -R musikcube:musikcube ./.config/
+
 # Copy Tini build
 m4_define([[TINI_IMAGE_TAG]], m4_ifdef([[CROSS_ARCH]], [[v4-CROSS_ARCH]], [[v4]]))m4_dnl
 COPY --from=hectormolinero/tini:TINI_IMAGE_TAG --chown=root:root /usr/bin/tini /usr/bin/tini
@@ -153,11 +159,11 @@ COPY --from=build-musikcube --chown=root:root /usr/share/musikcube/ /usr/share/m
 COPY --chown=root:root config/pulse-client.conf /etc/pulse/client.conf
 
 # Copy Caddy configuration
-COPY --chown=musikcube:musikcube config/caddy/ /home/musikcube/.caddy/
+COPY --chown=musikcube:musikcube config/caddy/ /home/musikcube/.config/caddy/
 
 # Copy musikcube configuration
-COPY --chown=musikcube:musikcube config/musikcube/ /home/musikcube/.musikcube/
-COPY --from=build-musikcube --chown=musikcube:musikcube /tmp/musik.db /home/musikcube/.musikcube/1/musik.db
+COPY --chown=musikcube:musikcube config/musikcube/ /home/musikcube/.config/musikcube/
+COPY --from=build-musikcube --chown=musikcube:musikcube /tmp/musik.db /home/musikcube/.config/musikcube/1/musik.db
 
 # Copy services
 COPY --chown=musikcube:musikcube scripts/service/ /home/musikcube/service/
@@ -175,8 +181,8 @@ EXPOSE 7905/tcp
 EXPOSE 7906/tcp
 
 # Don't declare volumes, let the user decide
-#VOLUME /home/musikcube/.caddy/
-#VOLUME /home/musikcube/.musikcube/
+#VOLUME /home/musikcube/.config/caddy/
+#VOLUME /home/musikcube/.config/musikcube/
 
 WORKDIR /home/musikcube/
 

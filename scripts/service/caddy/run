@@ -4,4 +4,4 @@ set -eu
 
 cd ~/
 exec 2>&1
-exec caddy -log=stdout -agree=true -conf "${HOME}/.caddy/Caddyfile"
+exec caddy -log=stdout -agree=true -conf "${HOME}/.config/caddy/Caddyfile"

@@ -10,11 +10,11 @@ setOption() {
 }
 
 # Set playback options
-PLAYBACK_FILE="${HOME}/.musikcube/playback.json"
+PLAYBACK_FILE="${HOME}/.config/musikcube/playback.json"
 setOption "${PLAYBACK_FILE}" 'OutputPlugin' "${MUSIKCUBE_OUTPUT_DRIVER}"
 
 # Set musikcubeserver options
-PLUGIN_MUSIKCUBESERVER_FILE="${HOME}/.musikcube/plugin_musikcubeserver(wss,http).json"
+PLUGIN_MUSIKCUBESERVER_FILE="${HOME}/.config/musikcube/plugin_musikcubeserver(wss,http).json"
 setOption "${PLUGIN_MUSIKCUBESERVER_FILE}" 'password' "${MUSIKCUBE_SERVER_PASSWORD}"
 
 if [ -t 1 ]; then

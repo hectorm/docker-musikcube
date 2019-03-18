@@ -16,8 +16,8 @@ docker run --detach \
   --publish 7905:7905/tcp \
   --publish 7906:7906/tcp \
   --env MUSIKCUBE_SERVER_PASSWORD=musikcube \
-  --mount type=volume,src=musikcube-caddy-data,dst=/home/musikcube/.caddy \
-  --mount type=volume,src=musikcube-app-data,dst=/home/musikcube/.musikcube \
+  --mount type=volume,src=musikcube-caddy-data,dst=/home/musikcube/.config/caddy \
+  --mount type=volume,src=musikcube-app-data,dst=/home/musikcube/.config/musikcube \
   --mount type=bind,src="$HOME"/Music,dst=/music,ro \
   hectormolinero/musikcube:latest
 ```
@@ -32,8 +32,8 @@ docker run --tty --interactive --rm \
   --env MUSIKCUBE_SERVER_PASSWORD=musikcube \
   --env MUSIKCUBE_OUTPUT_DRIVER=PulseAudio \
   --env PULSE_SERVER=/run/user/1000/pulse/native \
-  --mount type=volume,src=musikcube-caddy-data,dst=/home/musikcube/.caddy \
-  --mount type=volume,src=musikcube-app-data,dst=/home/musikcube/.musikcube \
+  --mount type=volume,src=musikcube-caddy-data,dst=/home/musikcube/.config/caddy \
+  --mount type=volume,src=musikcube-app-data,dst=/home/musikcube/.config/musikcube \
   --mount type=bind,src="$XDG_RUNTIME_DIR"/pulse/native,dst=/run/user/1000/pulse/native,ro \
   --mount type=bind,src="$HOME"/Music,dst=/music,ro \
   hectormolinero/musikcube:latest
@@ -48,7 +48,7 @@ This environment variable sets the output sound driver, by default its value is 
 
 ## Enable TLS with Caddy and Let's Encrypt
 This image uses [Caddy web server](https://caddyserver.com/) as a reverse proxy for musikcube, you can enable TLS by modifying the
-[`Caddyfile`](https://caddyserver.com/docs/caddyfile) located in `/home/musikcube/.caddy/Caddyfile` and following
+[`Caddyfile`](https://caddyserver.com/docs/caddyfile) located in `/home/musikcube/.config/caddy/Caddyfile` and following
 [the instructions](https://caddyserver.com/docs/tls) in Caddy's documentation.
 [All DNS providers are included](https://github.com/hectorm/docker-caddy).
 

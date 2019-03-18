@@ -42,8 +42,8 @@ docker run --detach \
 	--log-opt max-size=32m \
 	--publish '7905:7905/tcp' \
 	--publish '7906:7906/tcp' \
-	--mount type=volume,src="${DOCKER_CADDY_VOLUME}",dst='/home/musikcube/.caddy' \
-	--mount type=volume,src="${DOCKER_APP_VOLUME}",dst='/home/musikcube/.musikcube' \
+	--mount type=volume,src="${DOCKER_CADDY_VOLUME}",dst='/home/musikcube/.config/caddy' \
+	--mount type=volume,src="${DOCKER_APP_VOLUME}",dst='/home/musikcube/.config/musikcube' \
 	${MUSIKCUBE_SERVER_PASSWORD:+ \
 		--env MUSIKCUBE_SERVER_PASSWORD="${MUSIKCUBE_SERVER_PASSWORD}" \
 	} \
