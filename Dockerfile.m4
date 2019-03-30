@@ -49,7 +49,9 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		libswresample-dev \
 		libtag1-dev \
 		libvorbis-dev \
-		sqlite3
+		sqlite3 \
+		tzdata \
+	&& rm -rf /var/lib/apt/lists/*
 
 # Build musikcube
 ARG MUSIKCUBE_TREEISH=0.64.0
@@ -112,6 +114,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		nano \
 		pulseaudio \
 		runit \
+		tzdata \
 	&& rm -rf /var/lib/apt/lists/*
 
 # Setup locale
