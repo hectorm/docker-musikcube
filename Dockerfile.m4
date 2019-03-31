@@ -118,9 +118,9 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 	&& rm -rf /var/lib/apt/lists/*
 
 # Setup locale
-RUN locale-gen en_US.UTF-8
 ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
+RUN printf '%s\n' 'en_US.UTF-8 UTF-8' > /etc/locale.gen && locale-gen
 
 # Create users and groups
 ARG MUSIKCUBE_USER_UID=1000
