@@ -3,47 +3,47 @@
 set -eu
 export LC_ALL=C
 
-DOCKER_IMAGE_NAMESPACE=hectormolinero
-DOCKER_IMAGE_NAME=musikcube
-DOCKER_IMAGE_VERSION=latest
-DOCKER_IMAGE=${DOCKER_IMAGE_NAMESPACE}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VERSION}
-DOCKER_CONTAINER=${DOCKER_IMAGE_NAME}
-DOCKER_CADDY_VOLUME="${DOCKER_CONTAINER}"-caddy-data
-DOCKER_APP_VOLUME="${DOCKER_CONTAINER}"-app-data
+IMAGE_NAMESPACE=hectormolinero
+IMAGE_PROJECT=musikcube
+IMAGE_TAG=latest
+IMAGE_NAME=${IMAGE_NAMESPACE}/${IMAGE_PROJECT}:${IMAGE_TAG}
+CONTAINER_NAME=${IMAGE_PROJECT}
+MUSIKCUBE_VOLUME_NAME=${CONTAINER_NAME}-musikcube-data
+CADDY_VOLUME_NAME=${CONTAINER_NAME}-caddy-data
 
 imageExists() { [ -n "$(docker images -q "$1")" ]; }
 containerExists() { docker ps -aqf name="$1" --format '{{.Names}}' | grep -Fxq "$1"; }
 containerIsRunning() { docker ps -qf name="$1" --format '{{.Names}}' | grep -Fxq "$1"; }
 
-if ! imageExists "${DOCKER_IMAGE}"; then
-	>&2 printf -- '%s\n' "${DOCKER_IMAGE} image doesn't exist!"
+if ! imageExists "${IMAGE_NAME}"; then
+	>&2 printf -- '%s\n' "\"${IMAGE_NAME}\" image doesn't exist!"
 	exit 1
 fi
 
-if containerIsRunning "${DOCKER_CONTAINER}"; then
-	printf -- '%s\n' "Stopping \"${DOCKER_CONTAINER}\" container..."
-	docker stop "${DOCKER_CONTAINER}" >/dev/null
+if containerIsRunning "${CONTAINER_NAME}"; then
+	printf -- '%s\n' "Stopping \"${CONTAINER_NAME}\" container..."
+	docker stop "${CONTAINER_NAME}" >/dev/null
 fi
 
-if containerExists "${DOCKER_CONTAINER}"; then
-	printf -- '%s\n' "Removing \"${DOCKER_CONTAINER}\" container..."
-	docker rm "${DOCKER_CONTAINER}" >/dev/null
+if containerExists "${CONTAINER_NAME}"; then
+	printf -- '%s\n' "Removing \"${CONTAINER_NAME}\" container..."
+	docker rm "${CONTAINER_NAME}" >/dev/null
 fi
 
 if [ -d "${HOME}/Music" ]; then
 	MUSIC_FOLDER="${HOME}/Music"
 fi
 
-printf -- '%s\n' "Creating \"${DOCKER_CONTAINER}\" container..."
+printf -- '%s\n' "Creating \"${CONTAINER_NAME}\" container..."
 docker run --detach \
-	--name "${DOCKER_CONTAINER}" \
-	--hostname "${DOCKER_CONTAINER}" \
+	--name "${CONTAINER_NAME}" \
+	--hostname "${CONTAINER_NAME}" \
 	--restart on-failure:3 \
 	--log-opt max-size=32m \
 	--publish '7905:7905/tcp' \
 	--publish '7906:7906/tcp' \
-	--mount type=volume,src="${DOCKER_CADDY_VOLUME}",dst='/home/musikcube/.config/caddy' \
-	--mount type=volume,src="${DOCKER_APP_VOLUME}",dst='/home/musikcube/.config/musikcube' \
+	--mount type=volume,src="${MUSIKCUBE_VOLUME_NAME}",dst='/home/musikcube/.config/musikcube' \
+	--mount type=volume,src="${CADDY_VOLUME_NAME}",dst='/home/musikcube/.config/caddy' \
 	${MUSIKCUBE_SERVER_PASSWORD:+ \
 		--env MUSIKCUBE_SERVER_PASSWORD="${MUSIKCUBE_SERVER_PASSWORD}" \
 	} \
@@ -56,7 +56,7 @@ docker run --detach \
 	${MUSIC_FOLDER:+ \
 		--mount type=bind,src="${MUSIC_FOLDER}",dst='/music',ro \
 	} \
-	"${DOCKER_IMAGE}" "$@"
+	"${IMAGE_NAME}" "$@"
 
 printf -- '%s\n\n' 'Done!'
-exec docker logs -f "${DOCKER_CONTAINER}"
+exec docker logs -f "${CONTAINER_NAME}"

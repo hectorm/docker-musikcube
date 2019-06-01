@@ -3,31 +3,31 @@
 set -eu
 export LC_ALL=C
 
-DOCKER_IMAGE_NAMESPACE=hectormolinero
-DOCKER_IMAGE_NAME=musikcube
-DOCKER_IMAGE_VERSION=latest
-DOCKER_IMAGE=${DOCKER_IMAGE_NAMESPACE}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VERSION}
-DOCKER_CONTAINER=${DOCKER_IMAGE_NAME}
-DOCKER_CADDY_VOLUME="${DOCKER_CONTAINER}"-caddy-data
-DOCKER_APP_VOLUME="${DOCKER_CONTAINER}"-app-data
+IMAGE_NAMESPACE=hectormolinero
+IMAGE_PROJECT=musikcube
+IMAGE_TAG=latest
+IMAGE_NAME=${IMAGE_NAMESPACE}/${IMAGE_PROJECT}:${IMAGE_TAG}
+CONTAINER_NAME=${IMAGE_PROJECT}
+MUSIKCUBE_VOLUME_NAME=${CONTAINER_NAME}-musikcube-data
+CADDY_VOLUME_NAME=${CONTAINER_NAME}-caddy-data
 
 imageExists() { [ -n "$(docker images -q "$1")" ]; }
 containerExists() { docker ps -aqf name="$1" --format '{{.Names}}' | grep -Fxq "$1"; }
 containerIsRunning() { docker ps -qf name="$1" --format '{{.Names}}' | grep -Fxq "$1"; }
 
-if ! imageExists "${DOCKER_IMAGE}"; then
-	>&2 printf -- '%s\n' "${DOCKER_IMAGE} image doesn't exist!"
+if ! imageExists "${IMAGE_NAME}"; then
+	>&2 printf -- '%s\n' "\"${IMAGE_NAME}\" image doesn't exist!"
 	exit 1
 fi
 
-if containerIsRunning "${DOCKER_CONTAINER}"; then
-	printf -- '%s\n' "Stopping \"${DOCKER_CONTAINER}\" container..."
-	docker stop "${DOCKER_CONTAINER}" >/dev/null
+if containerIsRunning "${CONTAINER_NAME}"; then
+	printf -- '%s\n' "Stopping \"${CONTAINER_NAME}\" container..."
+	docker stop "${CONTAINER_NAME}" >/dev/null
 fi
 
-if containerExists "${DOCKER_CONTAINER}"; then
-	printf -- '%s\n' "Removing \"${DOCKER_CONTAINER}\" container..."
-	docker rm "${DOCKER_CONTAINER}" >/dev/null
+if containerExists "${CONTAINER_NAME}"; then
+	printf -- '%s\n' "Removing \"${CONTAINER_NAME}\" container..."
+	docker rm "${CONTAINER_NAME}" >/dev/null
 fi
 
 if [ -d "${HOME}/Music" ]; then
@@ -38,16 +38,16 @@ if [ -S "${XDG_RUNTIME_DIR:-}/pulse/native" ]; then
 	PULSEAUDIO_SOCKET="${XDG_RUNTIME_DIR}/pulse/native"
 fi
 
-printf -- '%s\n' "Creating \"${DOCKER_CONTAINER}\" container..."
-exec docker run --tty --interactive --rm \
-	--name "${DOCKER_CONTAINER}" \
-	--hostname "${DOCKER_CONTAINER}" \
+printf -- '%s\n' "Creating \"${CONTAINER_NAME}\" container..."
+exec docker run -it --rm \
+	--name "${CONTAINER_NAME}" \
+	--hostname "${CONTAINER_NAME}" \
 	--log-driver none \
 	--publish '7905:7905/tcp' \
 	--publish '7906:7906/tcp' \
 	--env MUSIKCUBE_OUTPUT_DRIVER='PulseAudio' \
-	--mount type=volume,src="${DOCKER_CADDY_VOLUME}",dst='/home/musikcube/.config/caddy' \
-	--mount type=volume,src="${DOCKER_APP_VOLUME}",dst='/home/musikcube/.config/musikcube' \
+	--mount type=volume,src="${MUSIKCUBE_VOLUME_NAME}",dst='/home/musikcube/.config/musikcube' \
+	--mount type=volume,src="${CADDY_VOLUME_NAME}",dst='/home/musikcube/.config/caddy' \
 	${MUSIKCUBE_SERVER_PASSWORD:+ \
 		--env MUSIKCUBE_SERVER_PASSWORD="${MUSIKCUBE_SERVER_PASSWORD}" \
 	} \
@@ -64,4 +64,4 @@ exec docker run --tty --interactive --rm \
 		--mount type=bind,src="${PULSEAUDIO_SOCKET}",dst='/run/user/1000/pulse/native',ro \
 		--env PULSE_SERVER='/run/user/1000/pulse/native' \
 	} \
-	"${DOCKER_IMAGE}" "$@"
+	"${IMAGE_NAME}" "$@"
