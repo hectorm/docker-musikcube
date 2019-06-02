@@ -120,7 +120,7 @@ RUN groupadd \
 RUN useradd \
 		--uid "${MUSIKCUBE_USER_UID}" \
 		--gid "${MUSIKCUBE_USER_GID}" \
-		--shell "$(which bash)" \
+		--shell "$(command -v bash)" \
 		--home-dir /home/musikcube/ \
 		--create-home \
 		musikcube
