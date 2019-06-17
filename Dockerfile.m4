@@ -43,7 +43,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 	&& rm -rf /var/lib/apt/lists/*
 
 # Build musikcube
-ARG MUSIKCUBE_TREEISH=0.65.0
+ARG MUSIKCUBE_TREEISH=0.65.1
 ARG MUSIKCUBE_REMOTE=https://github.com/clangen/musikcube.git
 RUN mkdir -p /tmp/musikcube/ && cd /tmp/musikcube/ \
 	&& git clone "${MUSIKCUBE_REMOTE}" ./ \
