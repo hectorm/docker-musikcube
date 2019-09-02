@@ -46,8 +46,8 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 ARG MUSIKCUBE_TREEISH=0.65.1
 ARG MUSIKCUBE_REMOTE=https://github.com/clangen/musikcube.git
 RUN mkdir -p /tmp/musikcube/ && cd /tmp/musikcube/ \
-	&& git clone "${MUSIKCUBE_REMOTE}" ./ \
-	&& git checkout "${MUSIKCUBE_TREEISH}" \
+	&& git clone "${MUSIKCUBE_REMOTE:?}" ./ \
+	&& git checkout "${MUSIKCUBE_TREEISH:?}" \
 	&& git submodule update --init --recursive
 RUN cd /tmp/musikcube/ \
 	&& cmake . -DCMAKE_INSTALL_PREFIX=/usr \
@@ -115,11 +115,11 @@ RUN printf '%s\n' 'en_US.UTF-8 UTF-8' > /etc/locale.gen && locale-gen
 ARG MUSIKCUBE_USER_UID=1000
 ARG MUSIKCUBE_USER_GID=1000
 RUN groupadd \
-		--gid "${MUSIKCUBE_USER_GID}" \
+		--gid "${MUSIKCUBE_USER_GID:?}" \
 		musikcube
 RUN useradd \
-		--uid "${MUSIKCUBE_USER_UID}" \
-		--gid "${MUSIKCUBE_USER_GID}" \
+		--uid "${MUSIKCUBE_USER_UID:?}" \
+		--gid "${MUSIKCUBE_USER_GID:?}" \
 		--shell "$(command -v bash)" \
 		--home-dir /home/musikcube/ \
 		--create-home \
@@ -179,7 +179,7 @@ EXPOSE 7906/tcp
 WORKDIR /home/musikcube/
 
 HEALTHCHECK --start-period=60s --interval=30s --timeout=5s --retries=3 \
-	CMD /usr/local/bin/docker-healthcheck-cmd
+CMD ["/usr/local/bin/container-healthcheck-cmd"]
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
-CMD ["/usr/local/bin/docker-foreground-cmd"]
+CMD ["/usr/local/bin/container-foreground-cmd"]
