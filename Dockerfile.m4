@@ -140,6 +140,7 @@ m4_define([[CADDY_IMAGE_TAG]], m4_ifdef([[CROSS_ARCH]], [[latest-CROSS_ARCH]], [
 COPY --from=docker.io/hectormolinero/caddy:CADDY_IMAGE_TAG --chown=root:root /usr/bin/caddy /usr/bin/caddy
 
 # Add capabilities to the Caddy binary
+m4_ifdef([[CROSS_QEMU]], [[RUN setcap cap_net_bind_service=+ep CROSS_QEMU]])
 RUN setcap cap_net_bind_service=+ep /usr/bin/caddy
 
 # Copy musikcube build
