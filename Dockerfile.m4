@@ -1,10 +1,10 @@
 m4_changequote([[, ]])
 
 ##################################################
-## "build-musikcube" stage
+## "build" stage
 ##################################################
 
-m4_ifdef([[CROSS_ARCH]], [[FROM docker.io/CROSS_ARCH/ubuntu:18.04]], [[FROM docker.io/ubuntu:18.04]]) AS build-musikcube
+m4_ifdef([[CROSS_ARCH]], [[FROM docker.io/CROSS_ARCH/ubuntu:18.04]], [[FROM docker.io/ubuntu:18.04]]) AS build
 m4_ifdef([[CROSS_QEMU]], [[COPY --from=docker.io/hectormolinero/qemu-user-static:latest CROSS_QEMU CROSS_QEMU]])
 
 # Install system packages
@@ -40,22 +40,21 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		libtag1-dev \
 		libvorbis-dev \
 		sqlite3 \
-		tzdata \
-	&& rm -rf /var/lib/apt/lists/*
+		tzdata
 
 # Build musikcube
 ARG MUSIKCUBE_TREEISH=0.70.0
 ARG MUSIKCUBE_REMOTE=https://github.com/clangen/musikcube.git
-RUN mkdir -p /tmp/musikcube/ && cd /tmp/musikcube/ \
-	&& git clone "${MUSIKCUBE_REMOTE:?}" ./ \
-	&& git checkout "${MUSIKCUBE_TREEISH:?}" \
-	&& git submodule update --init --recursive
-RUN cd /tmp/musikcube/ \
-	&& cmake . -DCMAKE_INSTALL_PREFIX=/usr \
-	&& make -j"$(nproc)" \
-	&& make install \
-	&& file /usr/share/musikcube/musikcube \
-	&& file /usr/share/musikcube/musikcubed
+RUN mkdir /tmp/musikcube/
+WORKDIR /tmp/musikcube/
+RUN git clone "${MUSIKCUBE_REMOTE:?}" ./
+RUN git checkout "${MUSIKCUBE_TREEISH:?}"
+RUN git submodule update --init --recursive
+RUN cmake ./ -DCMAKE_INSTALL_PREFIX=/usr
+RUN make -j"$(nproc)"
+RUN make install
+RUN file /usr/share/musikcube/musikcube
+RUN file /usr/share/musikcube/musikcubed
 
 # Create music library db
 COPY config/musikcube/1/musik.db.sql /tmp/musik.db.sql
@@ -146,9 +145,9 @@ m4_ifdef([[CROSS_QEMU]], [[RUN setcap cap_net_bind_service=+ep CROSS_QEMU]])
 RUN setcap cap_net_bind_service=+ep /usr/bin/caddy
 
 # Copy musikcube build
-COPY --from=build-musikcube --chown=root:root /usr/bin/musikcube /usr/bin/musikcube
-COPY --from=build-musikcube --chown=root:root /usr/bin/musikcubed /usr/bin/musikcubed
-COPY --from=build-musikcube --chown=root:root /usr/share/musikcube/ /usr/share/musikcube/
+COPY --from=build --chown=root:root /usr/bin/musikcube /usr/bin/musikcube
+COPY --from=build --chown=root:root /usr/bin/musikcubed /usr/bin/musikcubed
+COPY --from=build --chown=root:root /usr/share/musikcube/ /usr/share/musikcube/
 
 # Copy PulseAudio client configuration
 COPY --chown=root:root config/pulse-client.conf /etc/pulse/client.conf
@@ -158,7 +157,7 @@ COPY --chown=musikcube:musikcube config/caddy/ /home/musikcube/.config/caddy/
 
 # Copy musikcube configuration
 COPY --chown=musikcube:musikcube config/musikcube/ /home/musikcube/.config/musikcube/
-COPY --from=build-musikcube --chown=musikcube:musikcube /tmp/musik.db /home/musikcube/.config/musikcube/1/musik.db
+COPY --from=build --chown=musikcube:musikcube /tmp/musik.db /home/musikcube/.config/musikcube/1/musik.db
 
 # Copy services
 COPY --chown=musikcube:musikcube scripts/service/ /home/musikcube/service/
