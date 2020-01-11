@@ -3,7 +3,7 @@ BEGIN TRANSACTION;
 CREATE TABLE `version` (
 	`version` INTEGER DEFAULT 1
 );
-INSERT INTO `version` VALUES (8);
+INSERT INTO `version` VALUES (9);
 
 CREATE TABLE `tracks` (
 	`id` INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,7 +24,12 @@ CREATE TABLE `tracks` (
 	`thumbnail_id` INTEGER DEFAULT 0,
 	`source_id` INTEGER DEFAULT 0,
 	`visible` INTEGER DEFAULT 1,
-	`external_id` TEXT DEFAULT null
+	`external_id` TEXT DEFAULT NULL,
+	`rating` INTEGER DEFAULT 0,
+	`last_played` REAL DEFAULT NULL,
+	`play_count` INTEGER DEFAULT 0,
+	`date_added` REAL DEFAULT NULL,
+	`date_updated` REAL DEFAULT NULL
 );
 
 CREATE TABLE `track_meta` (
@@ -247,54 +252,59 @@ CREATE INDEX `album_index` ON `albums` (
 
 CREATE VIEW `tracks_view` AS
 	SELECT DISTINCT
-		t.id,
-		t.track,
-		t.disc,
-		t.bpm,
-		t.duration,
-		t.filesize,
-		t.title,
-		t.filename,
-		t.thumbnail_id,
-		t.external_id,
-		al.name AS album,
-		alar.name AS album_artist,
-		gn.name AS genre,
-		ar.name AS artist,
-		t.filetime,
-		t.visual_genre_id,
-		t.visual_artist_id,
-		t.album_artist_id,
-		t.album_id
+		`t`.`id`,
+		`t`.`track`,
+		`t`.`disc`,
+		`t`.`bpm`,
+		`t`.`duration`,
+		`t`.`filesize`,
+		`t`.`title`,
+		`t`.`filename`,
+		`t`.`thumbnail_id`,
+		`t`.`external_id`,
+		`t`.`rating`,
+		`t`.`last_played`,
+		`t`.`play_count`,
+		`t`.`date_added`,
+		`t`.`date_updated`,
+		`al`.`name` AS `album`,
+		`alar`.`name` AS `album_artist`,
+		`gn`.`name` AS `genre`,
+		`ar`.`name` AS `artist`,
+		`t`.`filetime`,
+		`t`.`visual_genre_id`,
+		`t`.`visual_artist_id`,
+		`t`.`album_artist_id`,
+		`t`.`album_id`
 	FROM
-		tracks t,
-		albums al,
-		artists alar,
-		artists ar,
-		genres gn
+		`tracks` `t`,
+		`albums` `al`,
+		`artists` `alar`,
+		`artists` `ar`,
+		`genres` `gn`
 	WHERE
-		t.album_id = al.id
-		AND t.album_artist_id = alar.id
-		AND t.visual_genre_id = gn.id
-		AND t.visual_artist_id = ar.id;
+		`t`.`album_id` = `al`.`id`
+		AND `t`.`album_artist_id` = `alar`.`id`
+		AND `t`.`visual_genre_id` = `gn`.`id`
+		AND `t`.`visual_artist_id` = `ar`.`id`;
 
 CREATE VIEW `extended_metadata` AS
 	SELECT DISTINCT
-		tracks.id,
-		tracks.external_id,
-		tracks.source_id,
-		meta_keys.id AS meta_key_id,
-		track_meta.meta_value_id,
-		meta_keys.name AS key,
-		meta_values.content AS value
+		`tracks`.`id`,
+		`tracks`.`external_id`,
+		`tracks`.`source_id`,
+		`meta_keys`.`id` AS `meta_key_id`,
+		`track_meta`.`meta_value_id`,
+		`meta_keys`.`name` AS `key`,
+		`meta_values`.`content` AS `value`
 	FROM
-		track_meta,
-		meta_values,
-		meta_keys,
-		tracks
+		`track_meta`,
+		`meta_values`,
+		`meta_keys`,
+		`tracks`
 	WHERE
-		tracks.id == track_meta.track_id
-		AND meta_values.id = track_meta.meta_value_id
-		AND meta_values.meta_key_id == meta_keys.id;
+		`tracks`.`id` = `track_meta`.`track_id`
+		AND `meta_values`.`id` = `track_meta`.`meta_value_id`
+		AND `meta_values`.`meta_key_id` = `meta_keys`.`id`;
 
 COMMIT;
