@@ -1,7 +1,9 @@
 {
   "AutoUpdateCheck": false,
   "DisableCustomColors": false,
+  "DisableRatingColumn": true,
   "FirstRunSettingsDisplayed": true,
+  "InheritBackgroundColor": true,
   "SyncOnStartup": true,
   "UsePaletteColors": false
 }
