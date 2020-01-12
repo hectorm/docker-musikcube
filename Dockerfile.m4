@@ -19,9 +19,9 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		file \
 		git \
 		libasound2-dev \
+		libavcodec-dev \
 		libavformat-dev \
 		libavutil-dev \
-		libboost-atomic1.65-dev \
 		libboost-chrono1.65-dev \
 		libboost-date-time1.65-dev \
 		libboost-filesystem1.65-dev \
@@ -43,7 +43,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		tzdata
 
 # Build musikcube
-ARG MUSIKCUBE_TREEISH=0.80.0
+ARG MUSIKCUBE_TREEISH=0.82.0
 ARG MUSIKCUBE_REMOTE=https://github.com/clangen/musikcube.git
 RUN mkdir /tmp/musikcube/
 WORKDIR /tmp/musikcube/
@@ -78,9 +78,9 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		ca-certificates \
 		jq \
 		libasound2 \
+		libavcodec-extra57 \
 		libavformat57 \
 		libavutil55 \
-		libboost-atomic1.65.1 \
 		libboost-chrono1.65.1 \
 		libboost-date-time1.65.1 \
 		libboost-filesystem1.65.1 \
