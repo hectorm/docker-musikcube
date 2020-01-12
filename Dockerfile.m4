@@ -43,7 +43,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		tzdata
 
 # Build musikcube
-ARG MUSIKCUBE_TREEISH=0.82.0
+ARG MUSIKCUBE_TREEISH=0.83.0
 ARG MUSIKCUBE_REMOTE=https://github.com/clangen/musikcube.git
 RUN mkdir /tmp/musikcube/
 WORKDIR /tmp/musikcube/
