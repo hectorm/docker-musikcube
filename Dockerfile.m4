@@ -43,7 +43,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		tzdata
 
 # Build musikcube
-ARG MUSIKCUBE_TREEISH=0.90.0
+ARG MUSIKCUBE_TREEISH=0.90.1
 ARG MUSIKCUBE_REMOTE=https://github.com/clangen/musikcube.git
 RUN mkdir /tmp/musikcube/
 WORKDIR /tmp/musikcube/
@@ -149,18 +149,18 @@ COPY --from=build --chown=root:root /usr/bin/musikcube /usr/bin/musikcube
 COPY --from=build --chown=root:root /usr/bin/musikcubed /usr/bin/musikcubed
 COPY --from=build --chown=root:root /usr/share/musikcube/ /usr/share/musikcube/
 
-# Copy PulseAudio client configuration
-COPY --chown=root:root config/pulse-client.conf /etc/pulse/client.conf
+# Copy PulseAudio configuration
+COPY --chown=root:root ./config/pulse/ /etc/pulse/
 
 # Copy Caddy configuration
-COPY --chown=musikcube:musikcube config/caddy/ /home/musikcube/.config/caddy/
+COPY --chown=musikcube:musikcube ./config/caddy/ /home/musikcube/.config/caddy/
 
 # Copy musikcube configuration
-COPY --chown=musikcube:musikcube config/musikcube/ /home/musikcube/.config/musikcube/
+COPY --chown=musikcube:musikcube ./config/musikcube/ /home/musikcube/.config/musikcube/
 COPY --from=build --chown=musikcube:musikcube /tmp/musik.db /home/musikcube/.config/musikcube/1/musik.db
 
 # Copy services
-COPY --chown=musikcube:musikcube scripts/service/ /home/musikcube/service/
+COPY --chown=musikcube:musikcube ./scripts/service/ /home/musikcube/service/
 
 # Copy scripts
 COPY --chown=root:root scripts/bin/ /usr/local/bin/
