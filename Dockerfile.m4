@@ -43,7 +43,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		tzdata
 
 # Build musikcube
-ARG MUSIKCUBE_TREEISH=0.90.1
+ARG MUSIKCUBE_TREEISH=0.92.1
 ARG MUSIKCUBE_REMOTE=https://github.com/clangen/musikcube.git
 RUN mkdir /tmp/musikcube/
 WORKDIR /tmp/musikcube/
@@ -108,9 +108,14 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 	&& rm -rf /var/lib/apt/lists/*
 
 # Setup locale
-RUN printf '%s\n' 'en_US.UTF-8 UTF-8' > /etc/locale.gen
-RUN localedef -c -i en_US -f UTF-8 en_US.UTF-8 ||:
 ENV LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
+RUN printf '%s\n' "${LANG:?} UTF-8" > /etc/locale.gen \
+	&& localedef -c -i "${LANG%%.*}" -f UTF-8 "${LANG:?}" ||:
+
+# Setup timezone
+ENV TZ=UTC
+RUN printf '%s\n' "${TZ:?}" > /etc/timezone \
+	&& ln -snf "/usr/share/zoneinfo/${TZ:?}" /etc/localtime
 
 # Create users and groups
 ARG MUSIKCUBE_USER_UID=1000
@@ -163,7 +168,7 @@ COPY --from=build --chown=musikcube:musikcube /tmp/musik.db /home/musikcube/.con
 COPY --chown=musikcube:musikcube ./scripts/service/ /home/musikcube/service/
 
 # Copy scripts
-COPY --chown=root:root scripts/bin/ /usr/local/bin/
+COPY --chown=root:root ./scripts/bin/ /usr/local/bin/
 
 # Drop root privileges
 USER musikcube:musikcube
