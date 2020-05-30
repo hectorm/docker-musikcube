@@ -1,6 +1,6 @@
 {
   "http_server_enabled": true,
-  "http_server_port": 17906,
+  "http_server_port": 7906,
   "websocket_server_enabled": true,
-  "websocket_server_port": 17905
+  "websocket_server_port": 7905
 }

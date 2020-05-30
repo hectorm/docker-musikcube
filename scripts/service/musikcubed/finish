@@ -1,8 +1,0 @@
-#!/bin/sh
-
-set -eu
-
-if [ -e /tmp/musikcubed.lock ]; then
-	musikcubed --stop || true
-	rm -f /tmp/musikcubed.lock
-fi

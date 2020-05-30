@@ -68,6 +68,7 @@ m4_ifdef([[CROSS_ARCH]], [[FROM docker.io/CROSS_ARCH/ubuntu:18.04]], [[FROM dock
 m4_ifdef([[CROSS_QEMU]], [[COPY --from=docker.io/hectormolinero/qemu-user-static:latest CROSS_QEMU CROSS_QEMU]])
 
 # Environment
+ENV MUSIKCUBE_PATH=/var/lib/musikcube/
 ENV MUSIKCUBE_SERVER_PASSWORD=musikcube
 ENV MUSIKCUBE_OUTPUT_DRIVER=Null
 
@@ -103,7 +104,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		locales \
 		nano \
 		pulseaudio \
-		runit \
 		tzdata \
 	&& rm -rf /var/lib/apt/lists/*
 
@@ -131,23 +131,10 @@ RUN useradd \
 		--create-home \
 		musikcube
 
-# Create XDG_CONFIG_HOME subdirectories
-RUN cd /home/musikcube/ \
-	&& mkdir -p ./.config/caddy/ \
-	&& mkdir -p ./.config/musikcube/ \
-	&& chown -R musikcube:musikcube ./.config/
-
-# Copy Tini build
-m4_define([[TINI_IMAGE_TAG]], m4_ifdef([[CROSS_ARCH]], [[latest-CROSS_ARCH]], [[latest]]))m4_dnl
-COPY --from=docker.io/hectormolinero/tini:TINI_IMAGE_TAG --chown=root:root /usr/bin/tini /usr/bin/tini
-
-# Copy Caddy build
-m4_define([[CADDY_IMAGE_TAG]], m4_ifdef([[CROSS_ARCH]], [[latest-CROSS_ARCH]], [[latest]]))m4_dnl
-COPY --from=docker.io/hectormolinero/caddy:CADDY_IMAGE_TAG --chown=root:root /usr/bin/caddy /usr/bin/caddy
-
-# Add capabilities to the Caddy binary
-m4_ifdef([[CROSS_QEMU]], [[RUN setcap cap_net_bind_service=+ep CROSS_QEMU]])
-RUN setcap cap_net_bind_service=+ep /usr/bin/caddy
+# Create $MUSIKCUBE_PATH directory
+RUN mkdir -p "${MUSIKCUBE_PATH:?}" /home/musikcube/.config/ \
+	&& ln -s "${MUSIKCUBE_PATH:?}" /home/musikcube/.config/musikcube \
+	&& chown -R musikcube:musikcube "${MUSIKCUBE_PATH:?}" /home/musikcube/
 
 # Copy musikcube build
 COPY --from=build --chown=root:root /usr/bin/musikcube /usr/bin/musikcube
@@ -157,15 +144,9 @@ COPY --from=build --chown=root:root /usr/share/musikcube/ /usr/share/musikcube/
 # Copy PulseAudio configuration
 COPY --chown=root:root ./config/pulse/ /etc/pulse/
 
-# Copy Caddy configuration
-COPY --chown=musikcube:musikcube ./config/caddy/ /home/musikcube/.config/caddy/
-
 # Copy musikcube configuration
-COPY --chown=musikcube:musikcube ./config/musikcube/ /home/musikcube/.config/musikcube/
-COPY --from=build --chown=musikcube:musikcube /tmp/musik.db /home/musikcube/.config/musikcube/1/musik.db
-
-# Copy services
-COPY --chown=musikcube:musikcube ./scripts/service/ /home/musikcube/service/
+COPY --chown=musikcube:musikcube ./config/musikcube/ "${MUSIKCUBE_PATH}"
+COPY --from=build --chown=musikcube:musikcube /tmp/musik.db "${MUSIKCUBE_PATH}"/1/musik.db
 
 # Copy scripts
 COPY --chown=root:root ./scripts/bin/ /usr/local/bin/
@@ -173,20 +154,10 @@ COPY --chown=root:root ./scripts/bin/ /usr/local/bin/
 # Drop root privileges
 USER musikcube:musikcube
 
-# Expose ports
 ## WebSocket server (metadata)
 EXPOSE 7905/tcp
 ## HTTP server (audio)
 EXPOSE 7906/tcp
 
-# Don't declare volumes, let the user decide
-#VOLUME /home/musikcube/.config/caddy/
-#VOLUME /home/musikcube/.config/musikcube/
-
-WORKDIR /home/musikcube/
-
-HEALTHCHECK --start-period=30s --interval=10s --timeout=5s --retries=1 \
-CMD ["/usr/local/bin/container-healthcheck-cmd"]
-
-ENTRYPOINT ["/usr/bin/tini", "--"]
-CMD ["/usr/local/bin/container-foreground-cmd"]
+WORKDIR "${MUSIKCUBE_PATH}"
+ENTRYPOINT ["/usr/local/bin/container-entrypoint-cmd"]

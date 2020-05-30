@@ -11,8 +11,7 @@ IMAGE_PROJECT=musikcube
 IMAGE_TAG=latest
 IMAGE_NAME=${IMAGE_REGISTRY:?}/${IMAGE_NAMESPACE:?}/${IMAGE_PROJECT:?}:${IMAGE_TAG:?}
 CONTAINER_NAME=${IMAGE_PROJECT:?}
-MUSIKCUBE_VOLUME_NAME=${CONTAINER_NAME:?}-app-data
-CADDY_VOLUME_NAME=${CONTAINER_NAME:?}-caddy-data
+VOLUME_NAME=${CONTAINER_NAME:?}-data
 
 imageExists() { [ -n "$("${DOCKER:?}" images -q "${1:?}")" ]; }
 containerExists() { "${DOCKER:?}" ps -af name="${1:?}" --format '{{.Names}}' | grep -Fxq "${1:?}"; }
@@ -49,20 +48,9 @@ exec "${DOCKER:?}" run -it --rm \
 	--publish '7905:7905/tcp' \
 	--publish '7906:7906/tcp' \
 	--env MUSIKCUBE_OUTPUT_DRIVER='PulseAudio' \
-	--mount type=volume,src="${MUSIKCUBE_VOLUME_NAME:?}",dst='/home/musikcube/.config/musikcube' \
-	--mount type=volume,src="${CADDY_VOLUME_NAME:?}",dst='/home/musikcube/.config/caddy' \
-	${MUSIKCUBE_SERVER_PASSWORD:+ \
-		--env MUSIKCUBE_SERVER_PASSWORD="${MUSIKCUBE_SERVER_PASSWORD:?}" \
-	} \
-	${CLOUDFLARE_EMAIL:+ \
-		--env CLOUDFLARE_EMAIL="${CLOUDFLARE_EMAIL:?}" \
-	} \
-	${CLOUDFLARE_API_KEY:+ \
-		--env CLOUDFLARE_API_KEY="${CLOUDFLARE_API_KEY:?}" \
-	} \
-	${MUSIC_FOLDER:+ \
-		--mount type=bind,src="${MUSIC_FOLDER:?}",dst='/music',ro \
-	} \
+	--mount type=volume,src="${VOLUME_NAME:?}",dst='/var/lib/musikcube/' \
+	${MUSIKCUBE_SERVER_PASSWORD:+--env MUSIKCUBE_SERVER_PASSWORD="${MUSIKCUBE_SERVER_PASSWORD:?}"} \
+	${MUSIC_FOLDER:+--mount type=bind,src="${MUSIC_FOLDER:?}",dst='/music',ro} \
 	${PULSEAUDIO_SOCKET:+ \
 		--mount type=bind,src="${PULSEAUDIO_SOCKET:?}",dst='/run/user/1000/pulse/native',ro \
 		--env PULSE_SERVER='/run/user/1000/pulse/native' \

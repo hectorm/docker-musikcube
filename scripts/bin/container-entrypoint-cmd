@@ -10,19 +10,17 @@ setOption() {
 }
 
 # Set playback options
-PLAYBACK_FILE=${HOME:?}/.config/musikcube/playback.json
+PLAYBACK_FILE=${MUSIKCUBE_PATH:?}/playback.json
 setOption "${PLAYBACK_FILE:?}" 'OutputPlugin' "${MUSIKCUBE_OUTPUT_DRIVER:?}"
 
 # Set musikcubeserver options
-PLUGIN_MUSIKCUBESERVER_FILE=${HOME:?}/.config/musikcube/plugin_musikcubeserver\(wss,http\).json
+PLUGIN_MUSIKCUBESERVER_FILE=${MUSIKCUBE_PATH:?}/plugin_musikcubeserver\(wss,http\).json
 setOption "${PLUGIN_MUSIKCUBESERVER_FILE:?}" 'password' "${MUSIKCUBE_SERVER_PASSWORD:?}"
 
 if [ -t 1 ]; then
-	# Start Caddy in background
-	runsv ~/service/caddy >/dev/null &
-	# Start musikcube in foreground
-	TERM=xterm-256color exec musikcube
+	export TERM=xterm-256color
+	exec musikcube "${@}"
 else
-	# Start all services in background
-	exec runsvdir -P ~/service/
+	rm -f /tmp/musikcubed.lock
+	exec musikcubed "${@:---foreground}"
 fi

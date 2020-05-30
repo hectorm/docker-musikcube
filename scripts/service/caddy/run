@@ -1,7 +1,0 @@
-#!/bin/sh
-
-set -eu
-
-cd ~/
-exec 2>&1
-exec caddy -log=stdout -agree=true -conf "${HOME:?}/.config/caddy/Caddyfile"
