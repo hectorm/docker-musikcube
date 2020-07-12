@@ -9,18 +9,21 @@ m4_ifdef([[CROSS_QEMU]], [[COPY --from=docker.io/hectormolinero/qemu-user-static
 
 # Install system packages
 RUN export DEBIAN_FRONTEND=noninteractive \
+	&& sed -i 's/^#\s*\(deb-src\s\)/\1/g' /etc/apt/sources.list \
 	&& apt-get update \
 	&& apt-get install -y --no-install-recommends \
 		build-essential \
 		ca-certificates \
 		clang \
 		curl \
+		devscripts \
 		file \
 		git \
 		libasound2-dev \
 		libavcodec-dev \
 		libavformat-dev \
 		libavutil-dev \
+		libboost-atomic1.71-dev \
 		libboost-chrono1.71-dev \
 		libboost-date-time1.71-dev \
 		libboost-filesystem1.71-dev \
@@ -32,6 +35,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		libmp3lame-dev \
 		libncurses-dev \
 		libogg-dev \
+		libopenmpt-dev \
 		libpulse-dev \
 		libssl-dev \
 		libswresample-dev \
@@ -55,7 +59,7 @@ RUN DEB_BUILD_PROFILES='stage1' \
 RUN dpkg -i /tmp/cmake_*.deb /tmp/cmake-data_*.deb
 
 # Build musikcube
-ARG MUSIKCUBE_TREEISH=0.92.1
+ARG MUSIKCUBE_TREEISH=0.93.1
 ARG MUSIKCUBE_REMOTE=https://github.com/clangen/musikcube.git
 RUN mkdir /tmp/musikcube/
 WORKDIR /tmp/musikcube/
@@ -94,6 +98,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		libavcodec-extra58 \
 		libavformat58 \
 		libavutil56 \
+		libboost-atomic1.71.0 \
 		libboost-chrono1.71.0 \
 		libboost-date-time1.71.0 \
 		libboost-filesystem1.71.0 \
@@ -106,6 +111,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		libmp3lame0 \
 		libncursesw6 \
 		libogg0 \
+		libopenmpt0 \
 		libpulse0 \
 		libssl1.1 \
 		libswresample3 \
