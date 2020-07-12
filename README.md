@@ -1,7 +1,6 @@
-[![Pipeline Status](https://gitlab.com/hectorm/docker-musikcube/badges/master/pipeline.svg)](https://gitlab.com/hectorm/docker-musikcube/pipelines)
-[![Docker Image Size](https://img.shields.io/microbadger/image-size/hectormolinero/musikcube/latest.svg)](https://hub.docker.com/r/hectormolinero/musikcube/)
-[![Docker Image Layers](https://img.shields.io/microbadger/layers/hectormolinero/musikcube/latest.svg)](https://hub.docker.com/r/hectormolinero/musikcube/)
-[![License](https://img.shields.io/github/license/hectorm/docker-musikcube.svg)](LICENSE.md)
+[![Docker pulls](https://img.shields.io/docker/pulls/hectormolinero/musikcube?label=Docker%20pulls)](https://hub.docker.com/r/hectormolinero/musikcube)
+[![GitLab CI](https://img.shields.io/gitlab/pipeline/hectorm/docker-musikcube/master?label=GitLab%20CI)](https://gitlab.com/hectorm/docker-musikcube/pipelines)
+[![License](https://img.shields.io/github/license/hectorm/docker-musikcube?label=License)](LICENSE.md)
 
 ***
 

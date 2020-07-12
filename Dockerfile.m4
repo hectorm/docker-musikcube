@@ -4,7 +4,7 @@ m4_changequote([[, ]])
 ## "build" stage
 ##################################################
 
-m4_ifdef([[CROSS_ARCH]], [[FROM docker.io/CROSS_ARCH/ubuntu:18.04]], [[FROM docker.io/ubuntu:18.04]]) AS build
+m4_ifdef([[CROSS_ARCH]], [[FROM docker.io/CROSS_ARCH/ubuntu:20.04]], [[FROM docker.io/ubuntu:20.04]]) AS build
 m4_ifdef([[CROSS_QEMU]], [[COPY --from=docker.io/hectormolinero/qemu-user-static:latest CROSS_QEMU CROSS_QEMU]])
 
 # Install system packages
@@ -14,7 +14,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		build-essential \
 		ca-certificates \
 		clang \
-		cmake \
 		curl \
 		file \
 		git \
@@ -22,16 +21,16 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		libavcodec-dev \
 		libavformat-dev \
 		libavutil-dev \
-		libboost-chrono1.65-dev \
-		libboost-date-time1.65-dev \
-		libboost-filesystem1.65-dev \
-		libboost-system1.65-dev \
-		libboost-thread1.65-dev \
+		libboost-chrono1.71-dev \
+		libboost-date-time1.71-dev \
+		libboost-filesystem1.71-dev \
+		libboost-system1.71-dev \
+		libboost-thread1.71-dev \
 		libcurl4-openssl-dev \
 		libev-dev \
 		libmicrohttpd-dev \
 		libmp3lame-dev \
-		libncursesw5-dev \
+		libncurses-dev \
 		libogg-dev \
 		libpulse-dev \
 		libssl-dev \
@@ -41,6 +40,19 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		libvorbis-dev \
 		sqlite3 \
 		tzdata
+
+# Build CMake with "_FILE_OFFSET_BITS=64"
+# (as a workaround for: https://gitlab.kitware.com/cmake/cmake/-/issues/20568)
+WORKDIR /tmp/
+RUN DEBIAN_FRONTEND=noninteractive apt-get build-dep -y cmake
+RUN apt-get source cmake && mv ./cmake-*/ ./cmake/
+WORKDIR /tmp/cmake/
+RUN DEB_BUILD_PROFILES='stage1' \
+	DEB_BUILD_OPTIONS='parallel=auto nocheck' \
+	DEB_CFLAGS_SET='-D _FILE_OFFSET_BITS=64' \
+	DEB_CXXFLAGS_SET='-D _FILE_OFFSET_BITS=64' \
+	debuild -b -uc -us
+RUN dpkg -i /tmp/cmake_*.deb /tmp/cmake-data_*.deb
 
 # Build musikcube
 ARG MUSIKCUBE_TREEISH=0.92.1
@@ -64,7 +76,7 @@ RUN sqlite3 /tmp/musik.db < /tmp/musik.db.sql
 ## "musikcube" stage
 ##################################################
 
-m4_ifdef([[CROSS_ARCH]], [[FROM docker.io/CROSS_ARCH/ubuntu:18.04]], [[FROM docker.io/ubuntu:18.04]]) AS musikcube
+m4_ifdef([[CROSS_ARCH]], [[FROM docker.io/CROSS_ARCH/ubuntu:20.04]], [[FROM docker.io/ubuntu:20.04]]) AS musikcube
 m4_ifdef([[CROSS_QEMU]], [[COPY --from=docker.io/hectormolinero/qemu-user-static:latest CROSS_QEMU CROSS_QEMU]])
 
 # Environment
@@ -79,24 +91,24 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		ca-certificates \
 		jq \
 		libasound2 \
-		libavcodec-extra57 \
-		libavformat57 \
-		libavutil55 \
-		libboost-chrono1.65.1 \
-		libboost-date-time1.65.1 \
-		libboost-filesystem1.65.1 \
-		libboost-system1.65.1 \
-		libboost-thread1.65.1 \
+		libavcodec-extra58 \
+		libavformat58 \
+		libavutil56 \
+		libboost-chrono1.71.0 \
+		libboost-date-time1.71.0 \
+		libboost-filesystem1.71.0 \
+		libboost-system1.71.0 \
+		libboost-thread1.71.0 \
 		libcap2-bin \
 		libcurl4 \
 		libev4 \
 		libmicrohttpd12 \
 		libmp3lame0 \
-		libncursesw5 \
+		libncursesw6 \
 		libogg0 \
 		libpulse0 \
 		libssl1.1 \
-		libswresample2 \
+		libswresample3 \
 		libsystemd0 \
 		libtag1v5 \
 		libvorbis0a \
