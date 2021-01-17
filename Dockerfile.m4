@@ -59,7 +59,7 @@ RUN DEB_BUILD_PROFILES='stage1' \
 RUN dpkg -i /tmp/cmake_*.deb /tmp/cmake-data_*.deb
 
 # Build musikcube
-ARG MUSIKCUBE_TREEISH=0.96.3
+ARG MUSIKCUBE_TREEISH=0.96.4
 ARG MUSIKCUBE_REMOTE=https://github.com/clangen/musikcube.git
 RUN mkdir /tmp/musikcube/
 WORKDIR /tmp/musikcube/
