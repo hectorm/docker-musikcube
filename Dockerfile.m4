@@ -178,4 +178,4 @@ EXPOSE 7905/tcp
 EXPOSE 7906/tcp
 
 WORKDIR "${MUSIKCUBE_PATH}"
-ENTRYPOINT ["/usr/local/bin/container-entrypoint-cmd"]
+ENTRYPOINT ["/usr/local/bin/container-init"]
