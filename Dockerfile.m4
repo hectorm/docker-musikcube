@@ -161,13 +161,19 @@ COPY --from=build --chown=root:root /usr/share/musikcube/ /usr/share/musikcube/
 
 # Copy PulseAudio configuration
 COPY --chown=root:root ./config/pulse/ /etc/pulse/
+RUN find /etc/pulse/ -type d -not -perm 0755 -exec chmod 0755 '{}' ';'
+RUN find /etc/pulse/ -type f -not -perm 0644 -exec chmod 0644 '{}' ';'
 
 # Copy musikcube configuration
 COPY --chown=musikcube:musikcube ./config/musikcube/ "${MUSIKCUBE_PATH}"
 COPY --from=build --chown=musikcube:musikcube /tmp/musik.db "${MUSIKCUBE_PATH}"/1/musik.db
+RUN find "${MUSIKCUBE_PATH}" -type d -not -perm 0755 -exec chmod 0755 '{}' ';'
+RUN find "${MUSIKCUBE_PATH}" -type f -not -perm 0644 -exec chmod 0644 '{}' ';'
 
 # Copy scripts
 COPY --chown=root:root ./scripts/bin/ /usr/local/bin/
+RUN find /usr/local/bin/ -type d -not -perm 0755 -exec chmod 0755 '{}' ';'
+RUN find /usr/local/bin/ -type f -not -perm 0755 -exec chmod 0755 '{}' ';'
 
 # Drop root privileges
 USER musikcube:musikcube
