@@ -6,7 +6,7 @@ setOption() {
 	file=$1; key=$2; value=$3; shift 3
 	[ ! -f "${file:?}" ] && printf '{}' > "${file:?}"
 	content=$(jq --arg k "${key:?}" --arg v "${value?}" '.+{($k): $v}' "${file:?}")
-	printf -- '%s\n' "${content:?}" > "${file:?}"
+	printf '%s\n' "${content:?}" > "${file:?}"
 }
 
 # Set playback options
