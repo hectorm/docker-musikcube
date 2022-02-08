@@ -43,7 +43,8 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		libtag1-dev \
 		libvorbis-dev \
 		sqlite3 \
-		tzdata
+		tzdata \
+	&& rm -rf /var/lib/apt/lists/*
 
 # Build CMake with "_FILE_OFFSET_BITS=64"
 # (as a workaround for: https://gitlab.kitware.com/cmake/cmake/-/issues/20568)
