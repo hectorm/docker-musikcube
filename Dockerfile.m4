@@ -49,8 +49,12 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 # Build CMake with "_FILE_OFFSET_BITS=64"
 # (as a workaround for: https://gitlab.kitware.com/cmake/cmake/-/issues/20568)
 WORKDIR /tmp/
-RUN DEBIAN_FRONTEND=noninteractive apt-get build-dep -y cmake
-RUN apt-get source cmake && mv ./cmake-*/ ./cmake/
+RUN export DEBIAN_FRONTEND=noninteractive \
+	&& apt-get update \
+	&& apt-get build-dep -y cmake \
+	&& apt-get source cmake \
+	&& mv ./cmake-*/ ./cmake/ \
+	&& rm -rf /var/lib/apt/lists/*
 WORKDIR /tmp/cmake/
 RUN DEB_BUILD_PROFILES='stage1' \
 	DEB_BUILD_OPTIONS='parallel=auto nocheck' \
