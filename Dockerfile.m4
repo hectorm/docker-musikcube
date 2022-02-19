@@ -42,6 +42,8 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		libsystemd-dev \
 		libtag1-dev \
 		libvorbis-dev \
+		lsb-release \
+		rpm \
 		sqlite3 \
 		tzdata \
 	&& rm -rf /var/lib/apt/lists/*
@@ -64,22 +66,28 @@ RUN DEB_BUILD_PROFILES='stage1' \
 RUN dpkg -i /tmp/cmake_*.deb /tmp/cmake-data_*.deb
 
 # Build musikcube
-ARG MUSIKCUBE_TREEISH=0.96.13
+ARG MUSIKCUBE_TREEISH=0.97.0
 ARG MUSIKCUBE_REMOTE=https://github.com/clangen/musikcube.git
 RUN mkdir /tmp/musikcube/
 WORKDIR /tmp/musikcube/
 RUN git clone "${MUSIKCUBE_REMOTE:?}" ./
 RUN git checkout "${MUSIKCUBE_TREEISH:?}"
 RUN git submodule update --init --recursive
-RUN cmake ./ -DCMAKE_INSTALL_PREFIX=/usr
+RUN cmake ./ \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DENABLE_PCH=true \
+		-DENABLE_BUNDLED_TAGLIB=false \
+		-DGENERATE_DEB=true \
+		-DDEB_ARCHITECTURE="$(dpkg --print-architecture)" \
+		-DDEB_PLATFORM="$(lsb_release -si | awk '{print(tolower($0))}')" \
+		-DDEB_DISTRO="$(lsb_release -sc | awk '{print(tolower($0))}')"
 RUN make -j"$(nproc)"
-RUN make install
-RUN file /usr/share/musikcube/musikcube
-RUN file /usr/share/musikcube/musikcubed
+RUN make package
 
-# Create music library db
-COPY config/musikcube/1/musik.db.sql /tmp/musik.db.sql
-RUN sqlite3 /tmp/musik.db < /tmp/musik.db.sql
+# Create musikcube library database
+COPY ./config/musikcube/1/musik.db.sql /tmp/musikcube/musik.db.sql
+RUN sqlite3 /tmp/musikcube/musik.db < /tmp/musikcube/musik.db.sql
 
 ##################################################
 ## "musikcube" stage
@@ -100,7 +108,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		ca-certificates \
 		jq \
 		libasound2 \
-		libavcodec-extra58 \
+		libavcodec-extra \
 		libavformat58 \
 		libavutil56 \
 		libboost-atomic1.71.0 \
@@ -109,7 +117,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		libboost-filesystem1.71.0 \
 		libboost-system1.71.0 \
 		libboost-thread1.71.0 \
-		libcap2-bin \
 		libcurl4 \
 		libev4 \
 		libmicrohttpd12 \
@@ -159,10 +166,8 @@ RUN mkdir -p "${MUSIKCUBE_PATH:?}" /home/musikcube/.config/ \
 	&& ln -s "${MUSIKCUBE_PATH:?}" /home/musikcube/.config/musikcube \
 	&& chown -R musikcube:musikcube "${MUSIKCUBE_PATH:?}" /home/musikcube/
 
-# Copy musikcube build
-COPY --from=build --chown=root:root /usr/bin/musikcube /usr/bin/musikcube
-COPY --from=build --chown=root:root /usr/bin/musikcubed /usr/bin/musikcubed
-COPY --from=build --chown=root:root /usr/share/musikcube/ /usr/share/musikcube/
+# Install musikcube from package
+RUN --mount=type=bind,from=build,source=/tmp/musikcube/,target=/tmp/musikcube/ dpkg -i /tmp/musikcube/musikcube_*.deb
 
 # Copy PulseAudio configuration
 COPY --chown=root:root ./config/pulse/ /etc/pulse/
@@ -171,7 +176,7 @@ RUN find /etc/pulse/ -type f -not -perm 0644 -exec chmod 0644 '{}' ';'
 
 # Copy musikcube configuration
 COPY --chown=musikcube:musikcube ./config/musikcube/ "${MUSIKCUBE_PATH}"
-COPY --from=build --chown=musikcube:musikcube /tmp/musik.db "${MUSIKCUBE_PATH}"/1/musik.db
+COPY --from=build --chown=musikcube:musikcube /tmp/musikcube/musik.db "${MUSIKCUBE_PATH}"/1/musik.db
 RUN find "${MUSIKCUBE_PATH}" -type d -not -perm 0755 -exec chmod 0755 '{}' ';'
 RUN find "${MUSIKCUBE_PATH}" -type f -not -perm 0644 -exec chmod 0644 '{}' ';'
 
