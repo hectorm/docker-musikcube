@@ -1,4 +1,4 @@
-[![Docker pulls](https://img.shields.io/docker/pulls/hectormolinero/musikcube?label=Docker%20pulls)](https://hub.docker.com/r/hectormolinero/musikcube)
+[![Docker pulls](https://img.shields.io/docker/pulls/hectorm/musikcube?label=Docker%20pulls)](https://hub.docker.com/r/hectorm/musikcube)
 [![GitLab CI](https://img.shields.io/gitlab/pipeline/hectorm/docker-musikcube/master?label=GitLab%20CI)](https://gitlab.com/hectorm/docker-musikcube/pipelines)
 [![License](https://img.shields.io/github/license/hectorm/docker-musikcube?label=License)](LICENSE.md)
 
@@ -19,7 +19,7 @@ docker run --detach \
   --env MUSIKCUBE_SERVER_PASSWORD=musikcube \
   --mount type=volume,src=musikcube-data,dst=/var/lib/musikcube/ \
   --mount type=bind,src="$HOME"/Music,dst=/music,ro \
-  hectormolinero/musikcube:latest
+  hectorm/musikcube:latest
 ```
 
 ## Start as client
@@ -36,7 +36,7 @@ docker run --tty --interactive --rm \
   --mount type=volume,src=musikcube-data,dst=/var/lib/musikcube/ \
   --mount type=bind,src="$XDG_RUNTIME_DIR"/pulse/native,dst=/run/user/1000/pulse/native,ro \
   --mount type=bind,src="$HOME"/Music,dst=/music,ro \
-  hectormolinero/musikcube:latest
+  hectorm/musikcube:latest
 ```
 
 ## Environment variables
