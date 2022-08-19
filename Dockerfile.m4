@@ -4,7 +4,7 @@ m4_changequote([[, ]])
 ## "build" stage
 ##################################################
 
-m4_ifdef([[CROSS_ARCH]], [[FROM docker.io/CROSS_ARCH/ubuntu:20.04]], [[FROM docker.io/ubuntu:20.04]]) AS build
+m4_ifdef([[CROSS_ARCH]], [[FROM docker.io/CROSS_ARCH/ubuntu:22.04]], [[FROM docker.io/ubuntu:22.04]]) AS build
 m4_ifdef([[CROSS_QEMU]], [[COPY --from=docker.io/hectorm/qemu-user-static:latest CROSS_QEMU CROSS_QEMU]])
 
 # Install system packages
@@ -15,20 +15,20 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		build-essential \
 		ca-certificates \
 		clang \
+		cmake \
 		curl \
-		devscripts \
 		file \
 		git \
 		libasound2-dev \
 		libavcodec-dev \
 		libavformat-dev \
 		libavutil-dev \
-		libboost-atomic1.71-dev \
-		libboost-chrono1.71-dev \
-		libboost-date-time1.71-dev \
-		libboost-filesystem1.71-dev \
-		libboost-system1.71-dev \
-		libboost-thread1.71-dev \
+		libboost-atomic-dev \
+		libboost-chrono-dev \
+		libboost-date-time-dev \
+		libboost-filesystem-dev \
+		libboost-system-dev \
+		libboost-thread-dev \
 		libcurl4-openssl-dev \
 		libev-dev \
 		libmicrohttpd-dev \
@@ -36,34 +36,16 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		libncurses-dev \
 		libogg-dev \
 		libopenmpt-dev \
+		libpipewire-0.3-dev \
 		libpulse-dev \
 		libssl-dev \
 		libswresample-dev \
 		libsystemd-dev \
 		libtag1-dev \
 		libvorbis-dev \
-		lsb-release \
-		rpm \
 		sqlite3 \
 		tzdata \
 	&& rm -rf /var/lib/apt/lists/*
-
-# Build CMake with "_FILE_OFFSET_BITS=64"
-# (as a workaround for: https://gitlab.kitware.com/cmake/cmake/-/issues/20568)
-WORKDIR /tmp/
-RUN export DEBIAN_FRONTEND=noninteractive \
-	&& apt-get update \
-	&& apt-get build-dep -y cmake \
-	&& apt-get source cmake \
-	&& mv ./cmake-*/ ./cmake/ \
-	&& rm -rf /var/lib/apt/lists/*
-WORKDIR /tmp/cmake/
-RUN DEB_BUILD_PROFILES='stage1' \
-	DEB_BUILD_OPTIONS='parallel=auto nocheck' \
-	DEB_CFLAGS_SET='-D _FILE_OFFSET_BITS=64' \
-	DEB_CXXFLAGS_SET='-D _FILE_OFFSET_BITS=64' \
-	debuild -b -uc -us
-RUN dpkg -i /tmp/cmake_*.deb /tmp/cmake-data_*.deb
 
 # Build musikcube
 ARG MUSIKCUBE_TREEISH=0.97.0
@@ -77,23 +59,22 @@ RUN cmake ./ \
 		-DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_INSTALL_PREFIX=/usr \
 		-DENABLE_PCH=true \
-		-DENABLE_BUNDLED_TAGLIB=false \
-		-DGENERATE_DEB=true \
-		-DDEB_ARCHITECTURE="$(dpkg --print-architecture)" \
-		-DDEB_PLATFORM="$(lsb_release -si | awk '{print(tolower($0))}')" \
-		-DDEB_DISTRO="$(lsb_release -sc | awk '{print(tolower($0))}')"
+		-DENABLE_BUNDLED_TAGLIB=false
 RUN make -j"$(nproc)"
-RUN make package
+RUN make install
+RUN file /usr/share/musikcube/musikcube
+RUN file /usr/share/musikcube/musikcubed
+RUN /usr/share/musikcube/musikcubed --version
 
 # Create musikcube library database
 COPY ./config/musikcube/1/musik.db.sql /tmp/musikcube/musik.db.sql
 RUN sqlite3 /tmp/musikcube/musik.db < /tmp/musikcube/musik.db.sql
 
 ##################################################
-## "musikcube" stage
+## "main" stage
 ##################################################
 
-m4_ifdef([[CROSS_ARCH]], [[FROM docker.io/CROSS_ARCH/ubuntu:20.04]], [[FROM docker.io/ubuntu:20.04]]) AS musikcube
+m4_ifdef([[CROSS_ARCH]], [[FROM docker.io/CROSS_ARCH/ubuntu:22.04]], [[FROM docker.io/ubuntu:22.04]]) AS main
 m4_ifdef([[CROSS_QEMU]], [[COPY --from=docker.io/hectorm/qemu-user-static:latest CROSS_QEMU CROSS_QEMU]])
 
 # Environment
@@ -111,12 +92,12 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		libavcodec-extra \
 		libavformat58 \
 		libavutil56 \
-		libboost-atomic1.71.0 \
-		libboost-chrono1.71.0 \
-		libboost-date-time1.71.0 \
-		libboost-filesystem1.71.0 \
-		libboost-system1.71.0 \
-		libboost-thread1.71.0 \
+		libboost-atomic1.74.0 \
+		libboost-chrono1.74.0 \
+		libboost-date-time1.74.0 \
+		libboost-filesystem1.74.0 \
+		libboost-system1.74.0 \
+		libboost-thread1.74.0 \
 		libcurl4 \
 		libev4 \
 		libmicrohttpd12 \
@@ -125,7 +106,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		libogg0 \
 		libopenmpt0 \
 		libpulse0 \
-		libssl1.1 \
+		libssl3 \
 		libswresample3 \
 		libsystemd0 \
 		libtag1v5 \
@@ -166,8 +147,10 @@ RUN mkdir -p "${MUSIKCUBE_PATH:?}" /home/musikcube/.config/ \
 	&& ln -s "${MUSIKCUBE_PATH:?}" /home/musikcube/.config/musikcube \
 	&& chown -R musikcube:musikcube "${MUSIKCUBE_PATH:?}" /home/musikcube/
 
-# Install musikcube from package
-RUN --mount=type=bind,from=build,source=/tmp/musikcube/,target=/tmp/musikcube/ dpkg -i /tmp/musikcube/musikcube_*.deb
+# Copy musikcube build
+COPY --from=build --chown=root:root /usr/bin/musikcube /usr/bin/musikcube
+COPY --from=build --chown=root:root /usr/bin/musikcubed /usr/bin/musikcubed
+COPY --from=build --chown=root:root /usr/share/musikcube/ /usr/share/musikcube/
 
 # Copy PulseAudio configuration
 COPY --chown=root:root ./config/pulse/ /etc/pulse/
