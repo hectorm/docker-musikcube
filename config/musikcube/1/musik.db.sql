@@ -3,10 +3,10 @@ BEGIN TRANSACTION;
 CREATE TABLE `version` (
 	`version` INTEGER DEFAULT 1
 );
-INSERT INTO `version` VALUES (9);
+INSERT INTO `version` VALUES (10);
 
 CREATE TABLE `tracks` (
-	`id` INTEGER PRIMARY KEY AUTOINCREMENT,
+	`id` INTEGER,
 	`track` INTEGER DEFAULT 0,
 	`disc` TEXT DEFAULT '1',
 	`bpm` REAL DEFAULT 0,
@@ -29,32 +29,37 @@ CREATE TABLE `tracks` (
 	`last_played` REAL DEFAULT NULL,
 	`play_count` INTEGER DEFAULT 0,
 	`date_added` REAL DEFAULT NULL,
-	`date_updated` REAL DEFAULT NULL
+	`date_updated` REAL DEFAULT NULL,
+	PRIMARY KEY(`id` AUTOINCREMENT)
 );
 
 CREATE TABLE `track_meta` (
-	`id` INTEGER PRIMARY KEY AUTOINCREMENT,
+	`id` INTEGER,
 	`track_id` INTEGER DEFAULT 0,
-	`meta_value_id` INTEGER DEFAULT 0
+	`meta_value_id` INTEGER DEFAULT 0,
+	PRIMARY KEY(`id` AUTOINCREMENT)
 );
 
 CREATE TABLE `track_genres` (
-	`id` INTEGER PRIMARY KEY AUTOINCREMENT,
+	`id` INTEGER,
 	`track_id` INTEGER DEFAULT 0,
-	`genre_id` INTEGER DEFAULT 0
+	`genre_id` INTEGER DEFAULT 0,
+	PRIMARY KEY(`id` AUTOINCREMENT)
 );
 
 CREATE TABLE `track_artists` (
-	`id` INTEGER PRIMARY KEY AUTOINCREMENT,
+	`id` INTEGER,
 	`track_id` INTEGER DEFAULT 0,
-	`artist_id` INTEGER DEFAULT 0
+	`artist_id` INTEGER DEFAULT 0,
+	PRIMARY KEY(`id` AUTOINCREMENT)
 );
 
 CREATE TABLE `thumbnails` (
-	`id` INTEGER PRIMARY KEY AUTOINCREMENT,
+	`id` INTEGER,
 	`filename` TEXT DEFAULT '',
 	`filesize` INTEGER DEFAULT 0,
-	`checksum` INTEGER DEFAULT 0
+	`checksum` INTEGER DEFAULT 0,
+	PRIMARY KEY(`id` AUTOINCREMENT)
 );
 
 CREATE TABLE `replay_gain` (
@@ -68,9 +73,10 @@ CREATE TABLE `replay_gain` (
 );
 
 CREATE TABLE `playlists` (
-	`id` INTEGER PRIMARY KEY AUTOINCREMENT,
+	`id` INTEGER,
 	`name` TEXT DEFAULT '',
-	`user_id` INTEGER DEFAULT 0
+	`user_id` INTEGER DEFAULT 0,
+	PRIMARY KEY(`id` AUTOINCREMENT)
 );
 
 CREATE TABLE `playlist_tracks` (
@@ -81,45 +87,52 @@ CREATE TABLE `playlist_tracks` (
 );
 
 CREATE TABLE `paths` (
-	`id` INTEGER PRIMARY KEY AUTOINCREMENT,
-	`path` TEXT DEFAULT ''
+	`id` INTEGER,
+	`path` TEXT DEFAULT '',
+	PRIMARY KEY(`id` AUTOINCREMENT)
 );
 INSERT INTO `paths` VALUES (1, '/music/');
 
 CREATE TABLE `meta_values` (
-	`id` INTEGER PRIMARY KEY AUTOINCREMENT,
+	`id` INTEGER,
 	`meta_key_id` INTEGER DEFAULT 0,
 	`sort_order` INTEGER DEFAULT 0,
-	`content` TEXT
+	`content` TEXT,
+	PRIMARY KEY(`id` AUTOINCREMENT)
 );
 
 CREATE TABLE `meta_keys` (
-	`id` INTEGER PRIMARY KEY AUTOINCREMENT,
-	`name` TEXT
+	`id` INTEGER,
+	`name` TEXT,
+	PRIMARY KEY(`id` AUTOINCREMENT)
 );
 
 CREATE TABLE `last_session_play_queue` (
-	`id` INTEGER PRIMARY KEY AUTOINCREMENT,
-	`track_id` INTEGER
+	`id` INTEGER,
+	`track_id` INTEGER,
+	PRIMARY KEY(`id` AUTOINCREMENT)
 );
 
 CREATE TABLE `genres` (
-	`id` INTEGER PRIMARY KEY AUTOINCREMENT,
+	`id` INTEGER,
 	`name` TEXT DEFAULT '',
 	`aggregated` INTEGER DEFAULT 0,
-	`sort_order` INTEGER DEFAULT 0
+	`sort_order` INTEGER DEFAULT 0,
+	PRIMARY KEY(`id` AUTOINCREMENT)
 );
 
 CREATE TABLE `directories` (
-	`id` INTEGER PRIMARY KEY AUTOINCREMENT,
-	`name` TEXT NOT NULL
+	`id` INTEGER,
+	`name` TEXT NOT NULL,
+	PRIMARY KEY(`id` AUTOINCREMENT)
 );
 
 CREATE TABLE `artists` (
-	`id` INTEGER PRIMARY KEY AUTOINCREMENT,
+	`id` INTEGER,
 	`name` TEXT DEFAULT '',
 	`aggregated` INTEGER DEFAULT 0,
-	`sort_order` INTEGER DEFAULT 0
+	`sort_order` INTEGER DEFAULT 0,
+	PRIMARY KEY(`id` AUTOINCREMENT)
 );
 
 CREATE TABLE `albums` (
@@ -157,18 +170,13 @@ CREATE INDEX `tracks_by_source_index` ON `tracks` (
 	`source_id`
 );
 
-CREATE INDEX `trackmeta_index2` ON `track_meta` (
-	`meta_value_id`,
-	`track_id`
-);
-
 CREATE INDEX `trackmeta_index1` ON `track_meta` (
 	`track_id`,
 	`meta_value_id`
 );
 
-CREATE INDEX `trackgenre_index2` ON `track_genres` (
-	`genre_id`,
+CREATE INDEX `trackmeta_index2` ON `track_meta` (
+	`meta_value_id`,
 	`track_id`
 );
 
@@ -177,8 +185,8 @@ CREATE INDEX `trackgenre_index1` ON `track_genres` (
 	`genre_id`
 );
 
-CREATE INDEX `trackartist_index2` ON `track_artists` (
-	`artist_id`,
+CREATE INDEX `trackgenre_index2` ON `track_genres` (
+	`genre_id`,
 	`track_id`
 );
 
@@ -187,17 +195,13 @@ CREATE INDEX `trackartist_index1` ON `track_artists` (
 	`artist_id`
 );
 
+CREATE INDEX `trackartist_index2` ON `track_artists` (
+	`artist_id`,
+	`track_id`
+);
+
 CREATE INDEX `thumbnail_index` ON `thumbnails` (
 	`filesize`
-);
-
-CREATE INDEX `playlist_tracks_index_3` ON `playlist_tracks` (
-	`track_external_id`
-);
-
-CREATE INDEX `playlist_tracks_index_2` ON `playlist_tracks` (
-	`track_external_id`,
-	`sort_order`
 );
 
 CREATE INDEX `playlist_tracks_index_1` ON `playlist_tracks` (
@@ -206,12 +210,24 @@ CREATE INDEX `playlist_tracks_index_1` ON `playlist_tracks` (
 	`sort_order`
 );
 
+CREATE INDEX `playlist_tracks_index_2` ON `playlist_tracks` (
+	`track_external_id`,
+	`sort_order`
+);
+
+CREATE INDEX `playlist_tracks_index_3` ON `playlist_tracks` (
+	`track_external_id`
+);
+
 CREATE INDEX `paths_index` ON `paths` (
 	`path`
 );
 
-CREATE INDEX `metavalues_index4` ON `meta_values` (
-	`id`,
+CREATE INDEX `metavalues_index1` ON `meta_values` (
+	`meta_key_id`
+);
+
+CREATE INDEX `metavalues_index2` ON `meta_values` (
 	`content`
 );
 
@@ -221,20 +237,17 @@ CREATE INDEX `metavalues_index3` ON `meta_values` (
 	`content`
 );
 
-CREATE INDEX `metavalues_index2` ON `meta_values` (
+CREATE INDEX `metavalues_index4` ON `meta_values` (
+	`id`,
 	`content`
 );
 
-CREATE INDEX `metavalues_index1` ON `meta_values` (
-	`meta_key_id`
+CREATE INDEX `metakey_index1` ON `meta_keys` (
+	`name`
 );
 
 CREATE INDEX `metakey_index2` ON `meta_keys` (
 	`id`,
-	`name`
-);
-
-CREATE INDEX `metakey_index1` ON `meta_keys` (
 	`name`
 );
 

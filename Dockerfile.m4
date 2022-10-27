@@ -48,7 +48,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 	&& rm -rf /var/lib/apt/lists/*
 
 # Build musikcube
-ARG MUSIKCUBE_TREEISH=0.98.0
+ARG MUSIKCUBE_TREEISH=0.98.1
 ARG MUSIKCUBE_REMOTE=https://github.com/clangen/musikcube.git
 RUN mkdir /tmp/musikcube/
 WORKDIR /tmp/musikcube/
@@ -105,6 +105,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		libncursesw6 \
 		libogg0 \
 		libopenmpt0 \
+		libpipewire-0.3-0 \
 		libpulse0 \
 		libssl3 \
 		libswresample3 \
