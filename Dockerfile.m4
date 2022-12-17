@@ -23,12 +23,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		libavcodec-dev \
 		libavformat-dev \
 		libavutil-dev \
-		libboost-atomic-dev \
-		libboost-chrono-dev \
-		libboost-date-time-dev \
-		libboost-filesystem-dev \
-		libboost-system-dev \
-		libboost-thread-dev \
 		libcurl4-openssl-dev \
 		libev-dev \
 		libmicrohttpd-dev \
@@ -48,7 +42,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 	&& rm -rf /var/lib/apt/lists/*
 
 # Build musikcube
-ARG MUSIKCUBE_TREEISH=0.98.1
+ARG MUSIKCUBE_TREEISH=0.99.0
 ARG MUSIKCUBE_REMOTE=https://github.com/clangen/musikcube.git
 RUN mkdir /tmp/musikcube/
 WORKDIR /tmp/musikcube/
@@ -58,7 +52,6 @@ RUN git submodule update --init --recursive
 RUN cmake ./ \
 		-DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_INSTALL_PREFIX=/usr \
-		-DENABLE_PCH=true \
 		-DENABLE_BUNDLED_TAGLIB=false
 RUN make -j"$(nproc)"
 RUN make install
@@ -92,12 +85,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		libavcodec-extra \
 		libavformat58 \
 		libavutil56 \
-		libboost-atomic1.74.0 \
-		libboost-chrono1.74.0 \
-		libboost-date-time1.74.0 \
-		libboost-filesystem1.74.0 \
-		libboost-system1.74.0 \
-		libboost-thread1.74.0 \
 		libcurl4 \
 		libev4 \
 		libmicrohttpd12 \
