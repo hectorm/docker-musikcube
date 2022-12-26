@@ -25,6 +25,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		libavutil-dev \
 		libcurl4-openssl-dev \
 		libev-dev \
+		libgme-dev \
 		libmicrohttpd-dev \
 		libmp3lame-dev \
 		libncurses-dev \
@@ -42,7 +43,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 	&& rm -rf /var/lib/apt/lists/*
 
 # Build musikcube
-ARG MUSIKCUBE_TREEISH=0.99.0
+ARG MUSIKCUBE_TREEISH=0.99.2
 ARG MUSIKCUBE_REMOTE=https://github.com/clangen/musikcube.git
 RUN mkdir /tmp/musikcube/
 WORKDIR /tmp/musikcube/
@@ -51,8 +52,7 @@ RUN git checkout "${MUSIKCUBE_TREEISH:?}"
 RUN git submodule update --init --recursive
 RUN cmake ./ \
 		-DCMAKE_BUILD_TYPE=Release \
-		-DCMAKE_INSTALL_PREFIX=/usr \
-		-DENABLE_BUNDLED_TAGLIB=false
+		-DCMAKE_INSTALL_PREFIX=/usr
 RUN make -j"$(nproc)"
 RUN make install
 RUN file /usr/share/musikcube/musikcube
@@ -87,6 +87,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		libavutil56 \
 		libcurl4 \
 		libev4 \
+		libgme0 \
 		libmicrohttpd12 \
 		libmp3lame0 \
 		libncursesw6 \
