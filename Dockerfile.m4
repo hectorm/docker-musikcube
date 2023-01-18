@@ -9,7 +9,6 @@ m4_ifdef([[CROSS_QEMU]], [[COPY --from=docker.io/hectorm/qemu-user-static:latest
 
 # Install system packages
 RUN export DEBIAN_FRONTEND=noninteractive \
-	&& sed -i 's/^#\s*\(deb-src\s\)/\1/g' /etc/apt/sources.list \
 	&& apt-get update \
 	&& apt-get install -y --no-install-recommends \
 		build-essential \
