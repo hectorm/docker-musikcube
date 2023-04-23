@@ -20,6 +20,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		git \
 		libasound2-dev \
 		libavcodec-dev \
+		portaudio19-dev \
 		libavformat-dev \
 		libavutil-dev \
 		libcurl4-openssl-dev \
@@ -42,7 +43,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 	&& rm -rf /var/lib/apt/lists/*
 
 # Build musikcube
-ARG MUSIKCUBE_TREEISH=0.99.8
+ARG MUSIKCUBE_TREEISH=3.0.0
 ARG MUSIKCUBE_REMOTE=https://github.com/clangen/musikcube.git
 RUN mkdir /tmp/musikcube/
 WORKDIR /tmp/musikcube/
@@ -93,6 +94,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		libogg0 \
 		libopenmpt0 \
 		libpipewire-0.3-0 \
+		libportaudio2 \
 		libpulse0 \
 		libssl3 \
 		libswresample3 \
