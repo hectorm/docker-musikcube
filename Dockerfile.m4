@@ -4,7 +4,7 @@ m4_changequote([[, ]])
 ## "build" stage
 ##################################################
 
-m4_ifdef([[CROSS_ARCH]], [[FROM docker.io/CROSS_ARCH/ubuntu:22.04]], [[FROM docker.io/ubuntu:22.04]]) AS build
+m4_ifdef([[CROSS_ARCH]], [[FROM docker.io/CROSS_ARCH/ubuntu:24.04]], [[FROM docker.io/ubuntu:24.04]]) AS build
 
 # Install system packages
 RUN export DEBIAN_FRONTEND=noninteractive \
@@ -12,14 +12,12 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 	&& apt-get install -y --no-install-recommends \
 		build-essential \
 		ca-certificates \
-		clang \
 		cmake \
 		curl \
 		file \
 		git \
 		libasound2-dev \
 		libavcodec-dev \
-		portaudio19-dev \
 		libavformat-dev \
 		libavutil-dev \
 		libcurl4-openssl-dev \
@@ -37,6 +35,8 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		libsystemd-dev \
 		libtag1-dev \
 		libvorbis-dev \
+		patchelf \
+		portaudio19-dev \
 		sqlite3 \
 		tzdata \
 	&& rm -rf /var/lib/apt/lists/*
@@ -66,7 +66,7 @@ RUN sqlite3 /tmp/musikcube/musik.db < /tmp/musikcube/musik.db.sql
 ## "main" stage
 ##################################################
 
-m4_ifdef([[CROSS_ARCH]], [[FROM docker.io/CROSS_ARCH/ubuntu:22.04]], [[FROM docker.io/ubuntu:22.04]]) AS main
+m4_ifdef([[CROSS_ARCH]], [[FROM docker.io/CROSS_ARCH/ubuntu:24.04]], [[FROM docker.io/ubuntu:24.04]]) AS main
 
 # Environment
 ENV MUSIKCUBE_PATH=/var/lib/musikcube/
@@ -79,23 +79,23 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 	&& apt-get install -y --no-install-recommends \
 		ca-certificates \
 		jq \
-		libasound2 \
-		libavcodec-extra \
-		libavformat58 \
-		libavutil56 \
-		libcurl4 \
-		libev4 \
-		libgme0 \
-		libmicrohttpd12 \
+		libasound2t64 \
+		libavcodec-extra60 \
+		libavformat60 \
+		libavutil58 \
+		libcurl4t64 \
+		libev4t64 \
+		libev4t64 \
+		libmicrohttpd12t64 \
 		libmp3lame0 \
 		libncursesw6 \
 		libogg0 \
-		libopenmpt0 \
-		libpipewire-0.3-0 \
+		libopenmpt0t64 \
+		libpipewire-0.3-0t64 \
 		libportaudio2 \
 		libpulse0 \
-		libssl3 \
-		libswresample3 \
+		libssl3t64 \
+		libswresample4 \
 		libsystemd0 \
 		libtag1v5 \
 		libvorbis0a \
@@ -116,24 +116,13 @@ ENV TZ=UTC
 RUN printf '%s\n' "${TZ:?}" > /etc/timezone \
 	&& ln -snf "/usr/share/zoneinfo/${TZ:?}" /etc/localtime
 
-# Create users and groups
-ARG MUSIKCUBE_USER_UID=1000
-ARG MUSIKCUBE_USER_GID=1000
-RUN groupadd \
-		--gid "${MUSIKCUBE_USER_GID:?}" \
-		musikcube
-RUN useradd \
-		--uid "${MUSIKCUBE_USER_UID:?}" \
-		--gid "${MUSIKCUBE_USER_GID:?}" \
-		--shell "$(command -v bash)" \
-		--home-dir /home/musikcube/ \
-		--create-home \
-		musikcube
+# Create unprivileged user
+RUN userdel -rf "$(id -nu 1000)" && useradd -u 1000 -g 0 -s "$(command -v bash)" -m musikcube
 
 # Create $MUSIKCUBE_PATH directory
 RUN mkdir -p "${MUSIKCUBE_PATH:?}" /home/musikcube/.config/ \
 	&& ln -s "${MUSIKCUBE_PATH:?}" /home/musikcube/.config/musikcube \
-	&& chown -R musikcube:musikcube "${MUSIKCUBE_PATH:?}" /home/musikcube/
+	&& chown -R musikcube:root "${MUSIKCUBE_PATH:?}" /home/musikcube/
 
 # Copy musikcube build
 COPY --from=build --chown=root:root /usr/bin/musikcube /usr/bin/musikcube
@@ -146,8 +135,8 @@ RUN find /etc/pulse/ -type d -not -perm 0755 -exec chmod 0755 '{}' ';'
 RUN find /etc/pulse/ -type f -not -perm 0644 -exec chmod 0644 '{}' ';'
 
 # Copy musikcube configuration
-COPY --chown=musikcube:musikcube ./config/musikcube/ "${MUSIKCUBE_PATH}"
-COPY --from=build --chown=musikcube:musikcube /tmp/musikcube/musik.db "${MUSIKCUBE_PATH}"/1/musik.db
+COPY --chown=musikcube:root ./config/musikcube/ "${MUSIKCUBE_PATH}"
+COPY --from=build --chown=musikcube:root /tmp/musikcube/musik.db "${MUSIKCUBE_PATH}"/1/musik.db
 RUN find "${MUSIKCUBE_PATH}" -type d -not -perm 0755 -exec chmod 0755 '{}' ';'
 RUN find "${MUSIKCUBE_PATH}" -type f -not -perm 0644 -exec chmod 0644 '{}' ';'
 
@@ -157,7 +146,7 @@ RUN find /usr/local/bin/ -type d -not -perm 0755 -exec chmod 0755 '{}' ';'
 RUN find /usr/local/bin/ -type f -not -perm 0755 -exec chmod 0755 '{}' ';'
 
 # Drop root privileges
-USER musikcube:musikcube
+USER musikcube:root
 
 ## WebSocket server (metadata)
 EXPOSE 7905/tcp
